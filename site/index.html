@@ -1,0 +1,856 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Conditions Queue Models</title>
+<meta name="description" content="Predicting which London planning-condition sign-offs will miss the 8-week deadline, and how long they take.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="assets/dash.js"></script>
+</head>
+<body>
+<header class="site-bar">
+  <div class="site-bar-inner">
+    <a class="site-name" href="./">Conditions Queue Models</a>
+    <nav class="site-links" aria-label="Site">
+      <a href="insight.html">Findings: London's Conditions Queue</a>
+      <a href="https://github.com/bayoleems/london-conditions-queue/blob/main/docs/DATA_DICTIONARY.md">Data dictionary</a>
+      <a href="https://github.com/bayoleems/london-conditions-queue">Source code</a>
+    </nav>
+  </div>
+</header>
+<main class="site-main" id="dash-root">
+<style>
+.cq { display: grid; gap: var(--cds-gap-xl); font-family: var(--font-sans); color: var(--color-fg); }
+.cq h1, .cq h2, .cq h3 { margin: 0; text-wrap: balance; }
+.cq h1 { font-family: var(--font-serif); font-weight: 400; font-size: var(--cds-font-size-title); }
+.cq h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); }
+.cq h3 { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); }
+.cq p { margin: 0; }
+.cq-head { display: grid; gap: var(--cds-gap-sm); }
+.cq-take { color: var(--color-fg-muted); max-width: 72ch; line-height: 1.5; }
+.cq .cq-take b, .cq .cq-sentence b { font-weight: var(--cds-font-weight-medium); color: var(--color-fg); font-variant-numeric: tabular-nums; }
+.cq-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: var(--cds-gap-md); }
+.cq-tile { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md); display: grid; gap: var(--cds-gap-xs); align-content: start; }
+.cq-tile .cq-label { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.cq-num { font-family: var(--font-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; line-height: 1.1; }
+.cq-tile .cq-sub { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.4; }
+.cq .cq-tile .cq-sub b { font-weight: var(--cds-font-weight-medium); color: var(--color-fg); }
+.cq-sec { display: grid; gap: var(--cds-gap-md); }
+.cq-sec > .cq-intro { color: var(--color-fg-muted); max-width: 72ch; line-height: 1.5; }
+.cq-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: var(--cds-gap-md); }
+.cq-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-sm); align-content: start; min-width: 0; }
+.cq-card.cq-wide { grid-column: 1 / -1; }
+.cq-grid-3 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); }
+.cq-body { font-size: var(--cds-font-size-body); line-height: 1.55; color: var(--color-fg-muted); }
+.cq .cq-body strong { color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
+.cq-defs { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: var(--cds-gap-xs) var(--cds-gap-md); margin: 0; font-size: var(--cds-font-size-caption); line-height: 1.5; }
+.cq-defs dt { font-weight: var(--cds-font-weight-medium); }
+.cq-defs dd { margin: 0; color: var(--color-fg-muted); }
+.cq-defs code { font-size: 0.95em; }
+.cq-sw.cq-band { background: var(--cq-c0); opacity: 0.2; }
+.cq-note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.45; }
+.cq-chart { position: relative; min-width: 0; }
+.cq-legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs) var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.cq-legend span { display: inline-flex; align-items: center; gap: var(--cds-gap-xs); }
+.cq-sw { width: 0.65rem; height: 0.65rem; border-radius: 2px; display: inline-block; }
+.cq-sw.cq-dot { border-radius: 50%; }
+.cq-sw.cq-line { height: 2px; width: 0.9rem; border-radius: 1px; }
+.cq-sw.cq-ring { border-radius: 50%; background: transparent; border: 2px solid currentColor; width: 0.55rem; height: 0.55rem; }
+.cq-c0 { background: var(--cq-c0); color: var(--cq-c0); }
+.cq-c1 { background: var(--cq-c1); color: var(--cq-c1); }
+.cq-muted { background: var(--cds-chart-muted); }
+.cq-fgsw { background: var(--color-fg); }
+.cq-tick { fill: var(--color-fg-muted); font-size: var(--cds-font-size-caption); font-family: var(--font-sans); }
+.cq-lbl { fill: var(--color-fg); font-size: var(--cds-font-size-caption); font-family: var(--font-sans); font-variant-numeric: tabular-nums; }
+.cq-tip { position: absolute; z-index: 2; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); pointer-events: none; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.cq-tip .cq-tip-head { color: var(--cds-text-secondary); }
+.cq-fail { display: flex; align-items: center; justify-content: center; gap: var(--cds-gap-xs); min-height: inherit; height: 100%; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.cq-fail-dot { width: 0.375rem; height: 0.375rem; border-radius: 50%; background: var(--color-bad); }
+.cq-scroll { overflow-x: auto; }
+.cq-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+.cq-table th { text-align: right; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); vertical-align: bottom; }
+.cq-table td { text-align: right; padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+.cq-table th:first-child, .cq-table td:first-child { text-align: left; white-space: normal; }
+.cq-toggle { display: inline-flex; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); overflow: hidden; justify-self: start; }
+.cq-toggle button { font: inherit; font-size: var(--cds-font-size-caption); padding: var(--cds-pad-xs) var(--cds-pad-sm); border: 0; background: transparent; color: var(--color-fg-muted); cursor: pointer; }
+.cq-toggle button[aria-pressed="true"] { background: var(--color-fg); color: var(--color-bg); }
+.cq-toggle button:focus-visible { outline: 2px solid var(--color-fg); outline-offset: -2px; }
+.cq-details { border-top: 1px solid var(--color-border-line); padding-top: var(--cds-pad-md); }
+.cq-details summary { cursor: pointer; font-weight: var(--cds-font-weight-medium); }
+.cq-details dl { display: grid; grid-template-columns: minmax(8rem, 14rem) minmax(0, 1fr); gap: var(--cds-gap-xs) var(--cds-gap-md); margin: var(--cds-gap-md) 0 0; font-size: var(--cds-font-size-caption); line-height: 1.5; }
+.cq-details dt { font-weight: var(--cds-font-weight-medium); }
+.cq-details dd { margin: 0; color: var(--color-fg-muted); }
+.cq-details h3 { margin-top: var(--cds-gap-md); }
+@media (max-width: 560px) { .cq-details dl { grid-template-columns: minmax(0, 1fr); } .cq-details dd { margin-bottom: var(--cds-gap-xs); } }
+[data-dash-source-state=empty] { color: transparent; }
+[data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+</style>
+
+<div class="cq" id="cq">
+  <header class="cq-head" id="overview">
+    <h1>Conditions Queue Models</h1>
+    <p class="cq-take"><b data-draw="h_late" data-source="headline" data-field="late_share" data-row="0">—</b> of London's condition sign-offs miss the 8-week deadline, and many have to be cleared before building can start. These models predict, on the day an application arrives, whether it will be late and how long it will take. The best, <b data-draw="h_bestname" data-source="headline" data-field="best_model" data-row="0">—</b>, scores an AUC of <b data-draw="h_best" data-source="headline" data-field="best_auc" data-row="0">—</b> against <b data-draw="h_boro" data-source="headline" data-field="borough_auc" data-row="0">—</b> for the borough average. Reading the description is what lifts it: without it the model scores <b data-draw="h_notext" data-source="headline" data-field="no_text_auc" data-row="0">—</b>. Decision time can't be predicted to the day, because most decisions land near the deadline, but the slow tail can be flagged.</p>
+  </header>
+
+  <section class="cq-tiles" aria-label="Headline figures">
+    <div class="cq-tile" id="tile-late">
+      <span class="cq-label">Sign-offs decided after 8 weeks</span>
+      <span class="cq-num" data-draw="h_late" data-source="headline" data-field="late_share" data-row="0">—</span>
+      <span class="cq-sub">of <b data-draw="h_n" data-source="headline" data-field="n_applications" data-row="0">—</b> submitted 2021–2025, undecided ones included</span>
+    </div>
+    <div class="cq-tile" id="tile-capture">
+      <span class="cq-label">Late sign-offs in the top 30% of predicted risk</span>
+      <span class="cq-num" data-draw="h_capture" data-source="risk_capture" data-field="captured" data-row="0">—</span>
+      <span class="cq-sub">Checking the riskiest 30% of 2024–25 applications finds this share of all the late ones</span>
+    </div>
+    <div class="cq-tile" id="tile-auc">
+      <span class="cq-label">Best model AUC (late or not)</span>
+      <span class="cq-num" data-draw="h_best" data-source="headline" data-field="best_auc" data-row="0">—</span>
+      <span class="cq-sub">Borough average: <b data-draw="h_boro" data-source="headline" data-field="borough_auc" data-row="0">—</b>. Coin flip: 0.5.</span>
+    </div>
+    <div class="cq-tile" id="tile-p90">
+      <span class="cq-label">Decided by the predicted "plan for" date</span>
+      <span class="cq-num" data-draw="h_p90" data-source="headline" data-field="p90_coverage" data-row="0">—</span>
+      <span class="cq-sub">P90 from the quantile model, 2024–25 decisions</span>
+    </div>
+    <div class="cq-tile" id="tile-slow">
+      <span class="cq-label">Slower per extra condition bundled</span>
+      <span class="cq-num" data-draw="h_slowj" data-source="headline" data-field="per_condition_slowdown_jev" data-row="0">—</span>
+      <span class="cq-sub">Cox model with Jev's counts, borough and size held constant</span>
+    </div>
+  </section>
+
+  <section class="cq-sec" id="why">
+    <h2>Why predict this?</h2>
+    <div class="cq-grid cq-grid-3">
+      <div class="cq-card" id="card-why-problem">
+        <h3>The problem</h3>
+        <p class="cq-body">Planning permission usually comes with conditions: drainage, construction logistics, materials. Many must be signed off before work can start. Councils have 8 weeks to decide each sign-off, and more than half take longer. The delay comes after the scheme has already been approved, so it holds up homes that are otherwise ready to go.</p>
+      </div>
+      <div class="cq-card" id="card-why-users">
+        <h3>Who the prediction helps</h3>
+        <p class="cq-body"><strong>Councils</strong> can flag high-risk sign-offs on the day they arrive and give them early officer time. <strong>Developers</strong> can plan start dates around a realistic sign-off date rather than the statutory one. <strong>Policy teams</strong> can see which features of an application, such as bundling many conditions, are linked to delay.</p>
+      </div>
+      <div class="cq-card" id="card-why-bar">
+        <h3>What counts as useful</h3>
+        <p class="cq-body">The bar is the borough average: knowing only which council decides already tells you something. A model is worth using if it sorts applications into clearly higher- and lower-risk groups than that. It won't be right about every application, so it suits triage and planning ranges, not promises.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cq-sec" id="late">
+    <h2>Will a sign-off be late?</h2>
+    <p class="cq-intro">Models trained on 2021–23 submissions and tested on 2024–25, using only what is known on the day an application is submitted. AUC measures how well a model ranks applications from most to least likely to be late.</p>
+    <div class="cq-grid">
+      <div class="cq-card" id="card-late-scores">
+        <h3>Model scores</h3>
+        <p class="cq-note">AUC on the 2024–25 test set. Bars start at 0.5, a coin flip. The best model is highlighted.</p>
+        <div class="cq-chart dash-skeleton" style="min-height: 250px" data-draw="lateScores" data-source="late_scores"></div>
+      </div>
+      <div class="cq-card" id="card-deciles">
+        <h3>How often each risk group was actually late</h3>
+        <p class="cq-note">Test applications split into ten equal groups by LightGBM's predicted risk.</p>
+        <div class="cq-legend"><span><i class="cq-sw cq-c0"></i>Actually late</span><span><i class="cq-sw cq-line cq-fgsw"></i>Predicted</span><span><i class="cq-sw cq-line cq-muted"></i>Test average</span></div>
+        <div class="cq-chart dash-skeleton" style="min-height: 240px" data-draw="deciles" data-source="risk_deciles headline"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cq-sec" id="description">
+    <h2>Does the description help?</h2>
+    <p class="cq-intro">Every model fitted three ways on the same applications: with no description features, with the keyword tagger's, and with Jev's. Bars start at 0.5, a coin flip. AUC is shown for the two late models and C-index for the three decision-time models.</p>
+    <div class="cq-grid">
+      <div class="cq-card cq-wide" id="card-desc-value">
+        <h3>Score by description features used</h3>
+        <p class="cq-note">The description lifts every model. Jev's labels, which read only the conditions being signed off, do best in all five.</p>
+        <div class="cq-legend"><span><i class="cq-sw cq-muted"></i>No description</span><span><i class="cq-sw cq-c1"></i>Keyword tagger</span><span><i class="cq-sw cq-c0"></i>Jev</span></div>
+        <div class="cq-chart dash-skeleton" style="min-height: 280px" data-draw="descValue" data-source="description_value"></div>
+      </div>
+      <div class="cq-card" id="card-desc-mae">
+        <h3>Average error in days barely moves</h3>
+        <p class="cq-note">The description helps put applications in the right order, not predict the exact number of days.</p>
+        <div class="cq-scroll">
+          <table class="cq-table" data-source="description_value" data-row-key="features,model,metric">
+            <thead><tr><th data-field="features">Description features</th><th data-field="model">Model</th><th data-field="value">Average error (days)</th><th data-field="gain">Change</th></tr></thead>
+            <tbody data-draw="descMae"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cq-sec" id="days">
+    <h2>How long will it take?</h2>
+    <p class="cq-intro">Exact days can't be predicted much better than each borough's median, because most decisions land close to the 8-week deadline. The useful outputs are the order of applications, from quickest to slowest, and a "plan for" range.</p>
+    <div class="cq-grid">
+      <div class="cq-card" id="card-days-target">
+        <h3>What is being predicted</h3>
+        <dl class="cq-defs">
+          <dt>Target</dt><dd><code>days</code>: days from submission (<code>start_date</code>) to decision (<code>decided_date</code>).</dd>
+          <dt>Still undecided</dt><dd>Days so far, up to when the data was fetched, marked as not yet decided. The survival model treats these as "at least this long".</dd>
+          <dt>Models</dt><dd>Ridge and LightGBM predict log(1 + days); the Cox survival model predicts the daily chance of a decision; the quantile models give P50 (typical) and P90 (plan for).</dd>
+          <dt>Tested on</dt><dd>2024–25 decisions, trained on 2021–23.</dd>
+        </dl>
+      </div>
+      <div class="cq-card" id="card-days-accuracy">
+        <h3>How close the predictions are</h3>
+        <p class="cq-note">Decided 2024–25 applications. Rank correlation: 1 = perfect order, 0 = none. The borough median is closest in days; the models order applications slightly better.</p>
+        <div class="cq-scroll">
+          <table class="cq-table" data-source="days_accuracy" data-row-key="model">
+            <thead><tr><th data-field="model">Prediction</th><th data-field="median_error">Median error (days)</th><th data-field="within_14">Within 2 weeks</th><th data-field="within_28">Within 4 weeks</th><th data-field="rank_corr">Rank correlation</th></tr></thead>
+            <tbody data-draw="daysAccuracy"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="cq-card cq-wide" id="card-days-calibration">
+        <h3>Predicted vs actual days</h3>
+        <p class="cq-note">2024–25 decisions split into ten equal groups by predicted time (P50). The actual median sits near day 56 for most groups and rises only for the slowest-predicted ones. Predictions run high because 2021–23, the training years, were slower.</p>
+        <div class="cq-legend"><span><i class="cq-sw cq-line cq-fgsw"></i>Predicted (P50)</span><span><i class="cq-sw cq-dot cq-c0"></i>Actual median</span><span><i class="cq-sw cq-band"></i>Actual, middle half</span></div>
+        <div class="cq-chart dash-skeleton" style="min-height: 260px" data-draw="daysCalibration" data-source="days_calibration"></div>
+      </div>
+      <div class="cq-card" id="card-days-scores">
+        <h3>Days-to-decision scores</h3>
+        <p class="cq-note">Higher C-index is better, lower MAE is better. A dash means the score doesn't apply to that model.</p>
+        <div class="cq-scroll">
+          <table class="cq-table" data-source="days_scores" data-row-key="model">
+            <thead><tr><th data-field="model">Model</th><th data-field="c_index">C-index</th><th data-field="mae_days">MAE (days)</th><th data-field="auc">AUC (late)</th></tr></thead>
+            <tbody data-draw="daysTable"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="cq-card" id="card-ranges">
+        <h3>Typical and "plan for" times by conditions bundled</h3>
+        <p class="cq-note">Median predicted P50 and P90 for decided test applications, with the actual median.</p>
+        <div class="cq-legend"><span><i class="cq-sw cq-dot cq-c0"></i>P50 (typical)</span><span><i class="cq-sw cq-line cq-c0"></i>P90 (plan for)</span><span><i class="cq-sw cq-dot cq-fgsw"></i>Actual median</span></div>
+        <div class="cq-chart dash-skeleton" style="min-height: 250px" data-draw="ranges" data-source="ranges"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cq-sec" id="drivers">
+    <h2>What drives it, across all five models</h2>
+    <p class="cq-intro">Each feature is shuffled in the test set and the drop in each model's score is turned into a share of 100%. The two late models and three days models largely agree. Switch to see the same ranking with JEV reading the descriptions.</p>
+    <div class="cq-toggle" role="group" aria-label="Description features">
+      <button type="button" data-method="keyword" aria-pressed="true">Keyword description features</button>
+      <button type="button" data-method="jev" aria-pressed="false">JEV description features</button>
+    </div>
+    <div class="cq-grid">
+      <div class="cq-card" id="card-importance">
+        <h3>Average share of importance</h3>
+        <p class="cq-note">Top 12 features, averaged over the five models. Each label ends with its column name in brackets; the data dictionary defines them.</p>
+        <div class="cq-chart dash-skeleton" style="min-height: 360px" data-draw="importance" data-source="importance"></div>
+      </div>
+      <div class="cq-card" id="card-heat">
+        <h3>Share of importance by model (%)</h3>
+        <p class="cq-note">Darker cells mean the model relies on that feature more.</p>
+        <div class="cq-scroll">
+          <table class="cq-table" data-source="importance" data-row-key="method,feature">
+            <thead><tr><th data-field="feature">Feature</th><th data-field="late_logistic">Late · logistic</th><th data-field="late_lightgbm">Late · LightGBM</th><th data-field="days_ridge">Days · ridge</th><th data-field="days_lightgbm">Days · LightGBM</th><th data-field="days_cox">Days · Cox</th></tr></thead>
+            <tbody data-draw="heat"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cq-sec" id="bundling">
+    <h2>Bundling conditions</h2>
+    <p class="cq-intro">Holding each application's borough, size and topics as they were, and changing only the number of conditions bundled, shows bundling is linked to lateness in its own right.</p>
+    <div class="cq-grid">
+      <div class="cq-card" id="card-bundling">
+        <h3>Predicted chance of being late, all else equal</h3>
+        <p class="cq-note">Logistic regression on the test set, using the keyword count and JEV's count. Rings show how often applications with that JEV count were actually late.</p>
+        <div class="cq-legend"><span><i class="cq-sw cq-line cq-c0"></i>Predicted, JEV count</span><span><i class="cq-sw cq-line cq-c1"></i>Predicted, keyword count</span><span><i class="cq-sw cq-ring cq-c0"></i>Actually late, JEV count</span></div>
+        <div class="cq-chart dash-skeleton" style="min-height: 260px" data-draw="bundling" data-source="bundling"></div>
+      </div>
+      <div class="cq-card" id="card-cox">
+        <h3>What speeds decisions up or slows them down</h3>
+        <p class="cq-note">Cox model speed ratios with 95% ranges. Below 1 is slower. Boroughs compare with Croydon and application sizes with Small; numeric features are per standard deviation. Column names are in brackets.</p>
+        <div class="cq-chart dash-skeleton" style="min-height: 420px" data-draw="cox" data-source="cox_effects"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cq-sec" id="jev">
+    <h2>Reading the descriptions with JEV</h2>
+    <p class="cq-intro">A description has two parts: the request ("condition 13 (construction method statement)") and a copy of the original permission. The keyword tagger reads both, so it often tags the scheme. Jev, TypeSafe's decision model on OpenRouter, answers yes/no and multiple-choice questions about only the conditions requested. It labelled <b data-draw="h_jevcov" data-source="headline" data-field="jev_coverage" data-row="0">—</b> of the modelled applications.</p>
+    <div class="cq-grid">
+      <div class="cq-card cq-wide" id="card-topics">
+        <h3>Share of applications tagged with each topic</h3>
+        <p class="cq-note">A long gap means the keyword tagger is mostly picking the topic up from the copied scheme text.</p>
+        <div class="cq-legend"><span><i class="cq-sw cq-dot cq-muted"></i>Keyword tagger</span><span><i class="cq-sw cq-dot cq-c0"></i>JEV</span></div>
+        <div class="cq-chart dash-skeleton" style="min-height: 440px" data-draw="topics" data-source="topic_rates"></div>
+      </div>
+      <div class="cq-card" id="card-jev-sets">
+        <h3>Late model with each set of description features</h3>
+        <p class="cq-note">Same applications and split. LightGBM is averaged over 5 seeds.</p>
+        <div class="cq-scroll">
+          <table class="cq-table" data-source="jev_feature_sets" data-row-key="features">
+            <thead><tr><th data-field="features">Description features</th><th data-field="logistic_auc">Logistic AUC</th><th data-field="lightgbm_auc">LightGBM AUC</th><th data-field="lightgbm_sd">± seeds</th></tr></thead>
+            <tbody data-draw="jevSets"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="cq-card" id="card-jev-models">
+        <h3>All five models, keyword vs JEV</h3>
+        <p class="cq-note">C-index for every model, and AUC for the two late models.</p>
+        <div class="cq-scroll">
+          <table class="cq-table" data-source="jev_model_scores" data-row-key="model">
+            <thead><tr><th data-field="model">Model</th><th data-field="c_keyword">C-index, keyword</th><th data-field="c_jev">C-index, JEV</th><th data-field="auc_keyword">AUC, keyword</th><th data-field="auc_jev">AUC, JEV</th></tr></thead>
+            <tbody data-draw="jevModels"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cq-sec" id="external">
+    <h2>External data tested</h2>
+    <p class="cq-intro">Two sources from the team's Data Asset Register were joined and tested on the same split. Neither helped: area-level data mostly repeats what the borough already tells the model.</p>
+    <div class="cq-grid">
+      <div class="cq-card" id="card-external">
+        <h3>With and without each source</h3>
+        <p class="cq-note">LightGBM late AUC and days C-index. House prices act as a disguised date stamp and make both slightly worse.</p>
+        <div class="cq-scroll">
+          <table class="cq-table" data-source="external_tests" data-row-key="test,features">
+            <thead><tr><th data-field="features">Features</th><th data-field="test">Source</th><th data-field="late_auc">Late AUC</th><th data-field="days_c">Days C-index</th></tr></thead>
+            <tbody data-draw="externalTable"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="cq-card" id="card-constraints">
+        <h3>Site constraints within the same borough</h3>
+        <p class="cq-note">Late share with and without each constraint, and the difference when compared inside each borough.</p>
+        <div class="cq-scroll">
+          <table class="cq-table" data-source="constraints_within" data-row-key="constraint">
+            <thead><tr><th data-field="constraint">Constraint</th><th data-field="late_with">Late, with (%)</th><th data-field="late_without">Late, without (%)</th><th data-field="diff_within_borough">Within-borough difference (points)</th><th data-field="boroughs">Boroughs</th></tr></thead>
+            <tbody data-draw="constraintsTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <details class="cq-details" id="method">
+    <summary>Definitions, method and what's left out</summary>
+    <dl>
+      <dt>Late</dt><dd>Decided more than 56 days (8 weeks) after submission, or still undecided past that point when the data was fetched in August 2026.</dd>
+      <dt>AUC</dt><dd>How well a model ranks applications from most to least likely to be late. 0.5 is a coin flip, 1 is perfect.</dd>
+      <dt>C-index</dt><dd>The share of application pairs a model puts in the right order of time taken. Undecided applications count as "at least this long".</dd>
+      <dt>P50 and P90</dt><dd>Quantile predictions: the typical time, and the time by which about nine in ten should be decided.</dd>
+      <dt>Speed ratio</dt><dd>From the Cox survival model: how much a feature changes the daily chance of getting a decision. Below 1 is slower.</dd>
+      <dt>Keyword features</dt><dd>Topics, number of conditions and pre-start flag found by keyword matching on the whole description (<code>conditions_queue.analysis</code>).</dd>
+      <dt>JEV features</dt><dd>The same, labelled by Jev (~typesafe/jev-latest, OpenRouter's decisions API) from the request part only: a probability per topic, kept at 0.5 or more (<code>conditions_queue.classify_jev</code>).</dd>
+      <dt>Importance</dt><dd>Permutation importance: the drop in each model's test score when a feature is shuffled, as a share of all drops.</dd>
+    </dl>
+    <h3>Where the numbers come from</h3>
+    <dl>
+      <dt>Data</dt><dd>PlanIt-derived London planning applications extract, discharge-of-condition applications submitted 2021–2025.</dd>
+      <dt>Notebooks</dt><dd><a href="https://github.com/bayoleems/london-conditions-queue/blob/main/notebooks/02_late_model.ipynb">02_late_model.ipynb</a> and <a href="https://github.com/bayoleems/london-conditions-queue/blob/main/notebooks/03_days_model.ipynb">03_days_model.ipynb</a>, exported by <code>conditions_queue.build_dashboard_data</code> into <code>data/ui_dashboard.json</code>. This page is a fixed copy of their results.</dd>
+      <dt>Data dictionary</dt><dd><a href="https://github.com/bayoleems/london-conditions-queue/blob/main/docs/DATA_DICTIONARY.md">docs/DATA_DICTIONARY.md</a> defines every column, target, feature and table used here.</dd>
+    </dl>
+    <h3>What's left out</h3>
+    <dl>
+      <dt>Causes</dt><dd>These are associations. Applicants who bundle may differ in ways the data doesn't record.</dd>
+      <dt>Case detail</dt><dd>Consultee responses, extensions of time and validation dates aren't in the data and are likely the biggest missing drivers.</dd>
+      <dt>Application size</dt><dd>The <code>app_size</code> column: PlanIt's Small/Medium/Large label. It tracks the size of the scheme (Large: median 135 homes, Medium: 22, Small: 7) and is the strongest single predictor. Exactly how PlanIt assigns it hasn't been confirmed from its documentation.</dd>
+      <dt>Flood zones</dt><dd>Not tested: the national file is 2.5 GB.</dd>
+    </dl>
+  </details>
+</div>
+
+<script>
+dash.loader('headline', { description: 'The headline table from the notebooks’ export file', fn: ({ answer }) => answer.headline });
+dash.loader('late_scores', { description: 'The late_scores table from the notebooks’ export file', fn: ({ answer }) => answer.late_scores });
+dash.loader('risk_deciles', { description: 'The risk_deciles table from the notebooks’ export file', fn: ({ answer }) => answer.risk_deciles });
+dash.loader('bundling', { description: 'The bundling table from the notebooks’ export file', fn: ({ answer }) => answer.bundling });
+dash.loader('days_scores', { description: 'The days_scores table from the notebooks’ export file', fn: ({ answer }) => answer.days_scores });
+dash.loader('ranges', { description: 'The ranges table from the notebooks’ export file', fn: ({ answer }) => answer.ranges });
+dash.loader('cox_effects', { description: 'The cox_effects table from the notebooks’ export file', fn: ({ answer }) => answer.cox_effects });
+dash.loader('importance', { description: 'The importance table from the notebooks’ export file', fn: ({ answer }) => answer.importance });
+dash.loader('jev_model_scores', { description: 'The jev_model_scores table from the notebooks’ export file', fn: ({ answer }) => answer.jev_model_scores });
+dash.loader('jev_feature_sets', { description: 'The jev_feature_sets table from the notebooks’ export file', fn: ({ answer }) => answer.jev_feature_sets });
+dash.loader('topic_rates', { description: 'The topic_rates table from the notebooks’ export file', fn: ({ answer }) => answer.topic_rates });
+dash.loader('external_tests', { description: 'The external_tests table from the notebooks’ export file', fn: ({ answer }) => answer.external_tests });
+dash.loader('constraints_within', { description: 'The constraints_within table from the notebooks’ export file', fn: ({ answer }) => answer.constraints_within });
+dash.loader('days_accuracy', { description: 'The days_accuracy table from the notebooks’ export file', fn: ({ answer }) => answer.days_accuracy });
+dash.loader('days_calibration', { description: 'The days_calibration table from the notebooks’ export file', fn: ({ answer }) => answer.days_calibration });
+dash.loader('description_value', { description: 'The description_value table from the notebooks’ export file', fn: ({ answer }) => answer.description_value });
+
+dash.calc('risk_capture', {
+  inputs: ['risk_deciles'],
+  title: 'Late sign-offs caught in the top 30% of risk',
+  description: 'Share of all late 2024–25 applications that fall in the three highest predicted-risk groups (8, 9 and 10 of 10).',
+  fn: (risk_deciles) => {
+    const late = (d) => d.actual * d.applications;
+    const top = risk_deciles.filter((d) => d.decile >= 8);
+    return [{ captured: top.reduce((s, d) => s + late(d), 0) / risk_deciles.reduce((s, d) => s + late(d), 0) }];
+  },
+});
+</script>
+
+<script>
+window.cq = (() => {
+  const f = { pct0: d3.format('.0%'), pct1: d3.format('.1%'), auc: d3.format('.3f'), int: d3.format(','), days: d3.format(',.0f'), one: d3.format('.1f') };
+  const ok = (...ids) => ids.every((id) => dash.data(id).status === 'ok');
+  const rows = (id) => dash.data(id).data || [];
+  const dash_ = (v, fmt) => (v === null || v === undefined || Number.isNaN(v) ? '–' : fmt(v));
+  function failed(el, ids) {
+    el.replaceChildren();
+    const bad = ids.some((id) => ['error', 'connect', 'declined', 'missing'].includes(dash.data(id).status));
+    el.classList.toggle('dash-skeleton', !bad);
+    if (bad) {
+      const p = document.createElement('div');
+      p.className = 'cq-fail';
+      const dot = document.createElement('span');
+      dot.className = 'cq-fail-dot';
+      p.append(dot, document.createTextNode('Failed to load'));
+      el.append(p);
+    }
+  }
+  function svgIn(el, height) {
+    el.classList.remove('dash-skeleton');
+    el.replaceChildren();
+    const w = Math.max(260, Math.floor(el.clientWidth || 600));
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${w} ${height}`).attr('role', 'img');
+    return { svg, w };
+  }
+  function maxText(svg, strings, cls = 'cq-tick') {
+    const t = svg.append('text').attr('class', cls);
+    let m = 0;
+    for (const s of strings) { t.text(s); m = Math.max(m, t.node().getComputedTextLength()); }
+    t.remove();
+    return m;
+  }
+  // Left margin for row labels: the widest label, but never more than `share` of the width
+  function leftMargin(svg, strings, w, share = 0.45) {
+    return Math.min(w * share, maxText(svg, strings, 'cq-lbl')) + 12;
+  }
+  // Shorten a label with an ellipsis so it fits in maxW pixels
+  function clip(svg, s, maxW) {
+    const t = svg.append('text').attr('class', 'cq-lbl').text(s);
+    let out = s;
+    if (t.node().getComputedTextLength() > maxW) {
+      let lo = 0, hi = s.length;
+      while (lo < hi) {
+        const mid = (lo + hi + 1) >> 1;
+        t.text(s.slice(0, mid) + '…');
+        if (t.node().getComputedTextLength() <= maxW) lo = mid; else hi = mid - 1;
+      }
+      out = s.slice(0, lo).trimEnd() + '…';
+    }
+    t.remove();
+    return out;
+  }
+  function tip(el) {
+    const box = document.createElement('div');
+    box.className = 'cq-tip';
+    box.hidden = true;
+    el.append(box);
+    return {
+      show(event, lines) {
+        box.replaceChildren(...lines.map((l, i) => { const d = document.createElement('div'); if (i === 0) d.className = 'cq-tip-head'; d.textContent = l; return d; }));
+        box.hidden = false;
+        const r = el.getBoundingClientRect();
+        let x = event.clientX - r.left + 12, y = event.clientY - r.top + 12;
+        if (x + box.offsetWidth > r.width) x = Math.max(0, event.clientX - r.left - box.offsetWidth - 12);
+        if (y + box.offsetHeight > r.height) y = Math.max(0, event.clientY - r.top - box.offsetHeight - 12);
+        box.style.left = x + 'px';
+        box.style.top = y + 'px';
+      },
+      hide() { box.hidden = true; },
+    };
+  }
+  function axisClean(g) {
+    g.attr('font-size', null).attr('font-family', null);
+    g.selectAll('text').attr('class', 'cq-tick').attr('fill', null);
+    g.select('.domain').attr('stroke', 'var(--cds-chart-axis)');
+    g.selectAll('.tick line').attr('stroke', 'var(--cds-chart-axis)');
+  }
+  function grid(svg, scale, vertical, from, to) {
+    const g = svg.append('g');
+    for (const t of scale.ticks(5)) {
+      if (vertical) g.append('line').attr('x1', scale(t)).attr('x2', scale(t)).attr('y1', from).attr('y2', to);
+      else g.append('line').attr('y1', scale(t)).attr('y2', scale(t)).attr('x1', from).attr('x2', to);
+    }
+    g.selectAll('line').attr('stroke', 'var(--cds-chart-grid)').attr('stroke-width', 1);
+  }
+  function table(tb, id, cols, keyOf) {
+    tb.replaceChildren();
+    const g = dash.data(id);
+    if (g.status !== 'ok') return;
+    for (const r of g.data) {
+      const tr = document.createElement('tr');
+      if (keyOf) tr.dataset.key = keyOf(r);
+      for (const c of cols) {
+        const td = document.createElement('td');
+        td.textContent = c.fmt ? dash_(r[c.field], c.fmt) : (r[c.field] ?? '–');
+        if (c.style) Object.assign(td.style, c.style(r));
+        tr.append(td);
+      }
+      tb.append(tr);
+    }
+  }
+  document.querySelectorAll('.cq').forEach((el) => {
+    el.style.setProperty('--cq-c0', dash.colors[0]);
+    el.style.setProperty('--cq-c1', dash.colors[1]);
+  });
+  return { f, ok, rows, dash_, failed, svgIn, maxText, leftMargin, clip, tip, axisClean, grid, table };
+})();
+</script>
+
+<script>
+const headlineFields = {
+  h_late: (r) => cq.f.pct0(r.late_share), h_n: (r) => cq.f.int(r.n_applications), h_best: (r) => cq.f.auc(r.best_auc),
+  h_boro: (r) => cq.f.auc(r.borough_auc), h_bestname: (r) => r.best_model, h_median: (r) => cq.f.days(r.median_days),
+  h_undec: (r) => cq.f.int(r.n_undecided), h_p90: (r) => cq.f.pct0(r.p90_coverage),
+  h_slow: (r) => cq.f.pct0(r.per_condition_slowdown), h_slowj: (r) => cq.f.pct0(r.per_condition_slowdown_jev),
+  h_jevcov: (r) => cq.f.pct1(r.jev_coverage), h_notext: (r) => cq.f.auc(r.no_text_auc),
+};
+for (const [name, fmt] of Object.entries(headlineFields)) {
+  dash.draw(name, (el) => {
+    const g = dash.data('headline');
+    el.textContent = g.status === 'ok' && g.data[0] ? fmt(g.data[0]) : '—';
+  });
+}
+dash.draw('h_capture', (el) => {
+  const g = dash.data('risk_capture');
+  el.textContent = g.status === 'ok' && g.data[0] ? cq.f.pct0(g.data[0].captured) : '—';
+});
+</script>
+
+<script>
+dash.draw('lateScores', (el) => {
+  if (!cq.ok('late_scores')) return cq.failed(el, ['late_scores']);
+  const data = cq.rows('late_scores').slice().sort((a, b) => b.auc - a.auc);
+  const rowH = 30, m = { t: 6, r: 52, b: 28 };
+  const H = m.t + m.b + rowH * data.length;
+  const { svg, w } = cq.svgIn(el, H);
+  m.l = cq.leftMargin(svg, data.map((d) => d.model), w);
+  const x = d3.scaleLinear([0.5, Math.max(0.65, d3.max(data, (d) => d.auc) + 0.01)], [m.l, w - m.r]);
+  const y = d3.scaleBand(data.map((d) => d.model), [m.t, H - m.b]).padding(0.3);
+  cq.grid(svg, x, true, m.t, H - m.b);
+  svg.append('g').attr('transform', `translate(0,${H - m.b})`)
+    .call(d3.axisBottom(x).ticks(Math.max(2, Math.floor((w - m.l - m.r) / 70))).tickFormat(d3.format('.2f')).tickSizeOuter(0)).call(cq.axisClean);
+  const t = cq.tip(el);
+  const g = svg.append('g').selectAll('g').data(data).join('g');
+  g.append('text').attr('class', 'cq-lbl').attr('x', m.l - 8).attr('y', (d) => y(d.model) + y.bandwidth() / 2).attr('dy', '0.35em').attr('text-anchor', 'end').text((d) => cq.clip(svg, d.model, m.l - 12));
+  g.append('rect').attr('x', x(0.5)).attr('y', (d) => y(d.model)).attr('height', y.bandwidth()).attr('rx', 3)
+    .attr('width', (d) => Math.max(0, x(d.auc) - x(0.5)))
+    .attr('fill', (d, i) => (i === 0 ? dash.colors[0] : 'var(--cds-chart-muted)'));
+  g.append('text').attr('class', 'cq-lbl').attr('x', (d) => x(d.auc) + 6).attr('y', (d) => y(d.model) + y.bandwidth() / 2).attr('dy', '0.35em').text((d) => cq.f.auc(d.auc));
+  g.append('rect').attr('x', 0).attr('width', w).attr('y', (d) => y(d.model) - 4).attr('height', y.bandwidth() + 8).attr('fill', 'transparent')
+    .on('mousemove', (event, d) => t.show(event, [d.model, `AUC ${cq.f.auc(d.auc)}`, `Accuracy ${cq.dash_(d.accuracy, cq.f.pct1)}`, `Brier ${cq.dash_(d.brier, cq.f.auc)}`]))
+    .on('mouseleave', () => t.hide());
+});
+
+dash.draw('deciles', (el) => {
+  if (!cq.ok('risk_deciles', 'headline')) return cq.failed(el, ['risk_deciles', 'headline']);
+  const data = cq.rows('risk_deciles');
+  const avg = cq.rows('headline')[0].test_late_share;
+  const H = 240, m = { t: 10, r: 10, b: 38, l: 42 };
+  const { svg, w } = cq.svgIn(el, H);
+  const x = d3.scaleBand(data.map((d) => String(d.decile)), [m.l, w - m.r]).padding(0.25);
+  const y = d3.scaleLinear([0, 1], [H - m.b, m.t]);
+  cq.grid(svg, y, false, m.l, w - m.r);
+  svg.append('g').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5).tickFormat(d3.format('.0%')).tickSizeOuter(0)).call(cq.axisClean);
+  svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).tickSizeOuter(0)).call(cq.axisClean);
+  svg.append('text').attr('class', 'cq-tick').attr('x', (m.l + w - m.r) / 2).attr('y', H - 4).attr('text-anchor', 'middle').text('Predicted risk group (1 = lowest)');
+  const t = cq.tip(el);
+  const bw = Math.min(32, x.bandwidth());
+  const off = (x.bandwidth() - bw) / 2;
+  svg.append('g').selectAll('rect').data(data).join('rect')
+    .attr('x', (d) => x(String(d.decile)) + off).attr('width', bw).attr('y', (d) => y(d.actual)).attr('height', (d) => y(0) - y(d.actual))
+    .attr('rx', 3).attr('fill', dash.colors[0]);
+  svg.append('g').selectAll('line').data(data).join('line')
+    .attr('x1', (d) => x(String(d.decile)) + off - 3).attr('x2', (d) => x(String(d.decile)) + off + bw + 3)
+    .attr('y1', (d) => y(d.predicted)).attr('y2', (d) => y(d.predicted)).attr('stroke', 'var(--color-fg)').attr('stroke-width', 2).attr('stroke-linecap', 'round');
+  svg.append('line').attr('x1', m.l).attr('x2', w - m.r).attr('y1', y(avg)).attr('y2', y(avg))
+    .attr('stroke', 'var(--cds-chart-reference)').attr('stroke-dasharray', '4 3');
+  svg.append('g').selectAll('rect').data(data).join('rect')
+    .attr('x', (d) => x(String(d.decile))).attr('width', x.bandwidth()).attr('y', m.t).attr('height', H - m.b - m.t).attr('fill', 'transparent')
+    .on('mousemove', (event, d) => t.show(event, [`Risk group ${d.decile}`, `Actually late ${cq.f.pct0(d.actual)}`, `Predicted ${cq.f.pct0(d.predicted)}`, `${cq.f.int(d.applications)} applications`]))
+    .on('mouseleave', () => t.hide());
+});
+</script>
+
+<script>
+const DESC_SETS = ['No description features', 'Keyword description features', 'Jev description features'];
+dash.draw('descValue', (el) => {
+  if (!cq.ok('description_value')) return cq.failed(el, ['description_value']);
+  const data = cq.rows('description_value').filter((d) => d.metric !== 'MAE (days)');
+  const models = [...new Set(data.map((d) => d.model))];
+  const H = 280, m = { t: 12, r: 10, b: 46, l: 60 };
+  const { svg, w } = cq.svgIn(el, H);
+  const x0 = d3.scaleBand(models, [m.l, w - m.r]).paddingInner(0.25).paddingOuter(0.1);
+  const x1 = d3.scaleBand(DESC_SETS, [0, x0.bandwidth()]).padding(0.12);
+  const y = d3.scaleLinear([0.5, d3.max(data, (d) => d.value) + 0.01], [H - m.b, m.t]).nice();
+  const col = { 'No description features': 'var(--cds-chart-muted)', 'Keyword description features': dash.colors[1], 'Jev description features': dash.colors[0] };
+  cq.grid(svg, y, false, m.l, w - m.r);
+  svg.append('g').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5).tickFormat(d3.format('.2f')).tickSizeOuter(0)).call(cq.axisClean);
+  const lab = svg.append('g').selectAll('text').data(models).join('text').attr('class', 'cq-tick').attr('text-anchor', 'middle')
+    .attr('x', (d) => x0(d) + x0.bandwidth() / 2).attr('y', H - m.b + 16);
+  lab.append('tspan').text((d) => d.split(' · ')[0]);
+  lab.append('tspan').attr('x', (d) => x0(d) + x0.bandwidth() / 2).attr('dy', '1.2em').text((d) => d.split(' · ')[1]);
+  svg.append('text').attr('class', 'cq-tick').attr('transform', `translate(12,${(m.t + H - m.b) / 2}) rotate(-90)`).attr('text-anchor', 'middle').text('AUC or C-index');
+  const bw = Math.min(32, x1.bandwidth());
+  const off = (x1.bandwidth() - bw) / 2;
+  const t = cq.tip(el);
+  svg.append('g').selectAll('rect').data(data).join('rect')
+    .attr('x', (d) => x0(d.model) + x1(d.features) + off).attr('width', bw)
+    .attr('y', (d) => y(d.value)).attr('height', (d) => Math.max(0, y(0.5) - y(d.value))).attr('rx', 3)
+    .attr('fill', (d) => col[d.features])
+    .on('mousemove', (event, d) => t.show(event, [d.model, d.features, `${d.metric} ${cq.f.auc(d.value)}`, `Change against no description ${d.gain >= 0 ? '+' : ''}${cq.f.auc(d.gain)}`]))
+    .on('mouseleave', () => t.hide());
+});
+dash.draw('descMae', (tb) => {
+  tb.replaceChildren();
+  const g = dash.data('description_value');
+  if (g.status !== 'ok') return;
+  for (const r of g.data.filter((d) => d.metric === 'MAE (days)')) {
+    const tr = document.createElement('tr');
+    tr.dataset.key = [r.features, r.model, r.metric].map(encodeURIComponent).join(',');
+    for (const v of [r.features, r.model, cq.f.one(r.value), (r.gain > 0 ? '+' : '') + cq.f.one(r.gain)]) {
+      const td = document.createElement('td'); td.textContent = v; tr.append(td);
+    }
+    tb.append(tr);
+  }
+});
+
+dash.draw('daysAccuracy', (tb) => cq.table(tb, 'days_accuracy', [
+  { field: 'model' }, { field: 'median_error', fmt: cq.f.days }, { field: 'within_14', fmt: cq.f.pct0 },
+  { field: 'within_28', fmt: cq.f.pct0 }, { field: 'rank_corr', fmt: d3.format('.2f') },
+]));
+
+dash.draw('daysCalibration', (el) => {
+  if (!cq.ok('days_calibration')) return cq.failed(el, ['days_calibration']);
+  const data = cq.rows('days_calibration').slice().sort((a, b) => a.group - b.group);
+  const H = 260, m = { t: 12, r: 14, b: 40, l: 60 };
+  const { svg, w } = cq.svgIn(el, H);
+  const x = d3.scalePoint(data.map((d) => d.group), [m.l + 12, w - m.r - 12]);
+  const y = d3.scaleLinear([0, d3.max(data, (d) => Math.max(d.actual_p75, d.predicted_median)) * 1.08], [H - m.b, m.t]).nice();
+  cq.grid(svg, y, false, m.l, w - m.r);
+  svg.append('g').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5).tickSizeOuter(0)).call(cq.axisClean);
+  svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).tickSizeOuter(0)).call(cq.axisClean);
+  svg.append('text').attr('class', 'cq-tick').attr('x', (m.l + w - m.r) / 2).attr('y', H - 4).attr('text-anchor', 'middle').text('Predicted-time group (1 = quickest)');
+  svg.append('text').attr('class', 'cq-tick').attr('transform', `translate(12,${(m.t + H - m.b) / 2}) rotate(-90)`).attr('text-anchor', 'middle').text('Days to decision');
+  svg.append('path').datum(data).attr('fill', dash.colors[0]).attr('fill-opacity', 0.18)
+    .attr('d', d3.area().x((d) => x(d.group)).y0((d) => y(d.actual_p25)).y1((d) => y(d.actual_p75)));
+  svg.append('path').datum(data).attr('fill', 'none').attr('stroke', dash.colors[0]).attr('stroke-width', 2).attr('stroke-linejoin', 'round').attr('stroke-linecap', 'round')
+    .attr('d', d3.line().x((d) => x(d.group)).y((d) => y(d.actual_median)));
+  svg.append('g').selectAll('circle').data(data).join('circle').attr('cx', (d) => x(d.group)).attr('cy', (d) => y(d.actual_median)).attr('r', 3.5).attr('fill', dash.colors[0]);
+  svg.append('path').datum(data).attr('fill', 'none').attr('stroke', 'var(--color-fg)').attr('stroke-width', 2).attr('stroke-dasharray', '5 4')
+    .attr('d', d3.line().x((d) => x(d.group)).y((d) => y(d.predicted_median)));
+  const t = cq.tip(el);
+  const step = data.length > 1 ? x(data[1].group) - x(data[0].group) : w;
+  svg.append('g').selectAll('rect').data(data).join('rect')
+    .attr('x', (d) => x(d.group) - step / 2).attr('width', step).attr('y', m.t).attr('height', H - m.b - m.t).attr('fill', 'transparent')
+    .on('mousemove', (event, d) => t.show(event, [`Group ${d.group}`, `Predicted ${cq.f.days(d.predicted_median)} days`, `Actual median ${cq.f.days(d.actual_median)} days`, `Middle half ${cq.f.days(d.actual_p25)}–${cq.f.days(d.actual_p75)} days`, `${cq.f.int(d.applications)} applications`]))
+    .on('mouseleave', () => t.hide());
+});
+
+dash.draw('daysTable', (tb) => cq.table(tb, 'days_scores', [
+  { field: 'model' }, { field: 'c_index', fmt: cq.f.auc }, { field: 'mae_days', fmt: cq.f.one }, { field: 'auc', fmt: cq.f.auc },
+]));
+
+dash.draw('ranges', (el) => {
+  if (!cq.ok('ranges')) return cq.failed(el, ['ranges']);
+  const data = cq.rows('ranges');
+  const label = (d) => (d.conditions >= 7 ? '7+ conditions' : d.conditions === 1 ? '1 condition' : `${d.conditions} conditions`);
+  const rowH = 30, m = { t: 6, r: 44, b: 30 };
+  const H = m.t + m.b + rowH * data.length;
+  const { svg, w } = cq.svgIn(el, H);
+  m.l = cq.leftMargin(svg, data.map(label), w);
+  const x = d3.scaleLinear([0, d3.max(data, (d) => d.p90) * 1.05], [m.l, w - m.r]).nice();
+  const y = d3.scaleBand(data.map(label), [m.t, H - m.b]).padding(0.35);
+  cq.grid(svg, x, true, m.t, H - m.b);
+  svg.append('g').attr('transform', `translate(0,${H - m.b})`)
+    .call(d3.axisBottom(x).ticks(Math.max(2, Math.floor((w - m.l - m.r) / 60))).tickSizeOuter(0)).call(cq.axisClean);
+  svg.append('text').attr('class', 'cq-tick').attr('x', w - m.r).attr('y', H - 2).attr('text-anchor', 'end').text('days');
+  const t = cq.tip(el);
+  const g = svg.append('g').selectAll('g').data(data).join('g').attr('transform', (d) => `translate(0,${y(label(d)) + y.bandwidth() / 2})`);
+  g.append('text').attr('class', 'cq-lbl').attr('x', m.l - 8).attr('dy', '0.35em').attr('text-anchor', 'end').text(label);
+  g.append('line').attr('x1', (d) => x(d.p50)).attr('x2', (d) => x(d.p90)).attr('stroke', dash.colors[0]).attr('stroke-width', 2).attr('stroke-linecap', 'round');
+  g.append('line').attr('x1', (d) => x(d.p90)).attr('x2', (d) => x(d.p90)).attr('y1', -7).attr('y2', 7).attr('stroke', dash.colors[0]).attr('stroke-width', 2).attr('stroke-linecap', 'round');
+  g.append('circle').attr('cx', (d) => x(d.p50)).attr('r', 5).attr('fill', dash.colors[0]);
+  g.append('circle').attr('cx', (d) => x(d.actual_median)).attr('r', 3.5).attr('fill', 'var(--color-fg)');
+  g.append('text').attr('class', 'cq-lbl').attr('x', (d) => x(d.p90) + 8).attr('dy', '0.35em').text((d) => cq.f.days(d.p90));
+  g.append('rect').attr('x', 0).attr('width', w).attr('y', -rowH / 2).attr('height', rowH).attr('fill', 'transparent')
+    .on('mousemove', (event, d) => t.show(event, [label(d), `P50 ${cq.f.days(d.p50)} days`, `P90 ${cq.f.days(d.p90)} days`, `Actual median ${cq.f.days(d.actual_median)} days`, `${cq.f.int(d.applications)} applications`]))
+    .on('mouseleave', () => t.hide());
+});
+</script>
+
+<script>
+window.cqMethod = 'keyword';
+document.querySelectorAll('.cq-toggle button').forEach((b) => b.addEventListener('click', () => {
+  window.cqMethod = b.dataset.method;
+  document.querySelectorAll('.cq-toggle button').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.method === window.cqMethod)));
+  dash.draw('importance');
+  dash.draw('heat');
+}));
+
+dash.draw('importance', (el) => {
+  if (!cq.ok('importance')) return cq.failed(el, ['importance']);
+  const data = cq.rows('importance').filter((d) => d.method === window.cqMethod).sort((a, b) => b.avg_share - a.avg_share);
+  const rowH = 28, m = { t: 6, r: 44, b: 28 };
+  const H = m.t + m.b + rowH * data.length;
+  const { svg, w } = cq.svgIn(el, H);
+  m.l = cq.leftMargin(svg, data.map((d) => d.feature), w);
+  const x = d3.scaleLinear([0, Math.max(10, d3.max(data, (d) => d.avg_share))], [m.l, w - m.r]).nice();
+  const y = d3.scaleBand(data.map((d) => d.feature), [m.t, H - m.b]).padding(0.3);
+  cq.grid(svg, x, true, m.t, H - m.b);
+  svg.append('g').attr('transform', `translate(0,${H - m.b})`)
+    .call(d3.axisBottom(x).ticks(Math.max(2, Math.floor((w - m.l - m.r) / 60))).tickFormat((v) => `${v}%`).tickSizeOuter(0)).call(cq.axisClean);
+  const t = cq.tip(el);
+  const g = svg.append('g').selectAll('g').data(data).join('g');
+  g.append('text').attr('class', 'cq-lbl').attr('x', m.l - 8).attr('y', (d) => y(d.feature) + y.bandwidth() / 2).attr('dy', '0.35em').attr('text-anchor', 'end').text((d) => cq.clip(svg, d.feature, m.l - 12));
+  g.append('rect').attr('x', x(0)).attr('y', (d) => y(d.feature)).attr('height', y.bandwidth()).attr('rx', 3)
+    .attr('width', (d) => Math.max(0, x(d.avg_share) - x(0))).attr('fill', (d, i) => (i < 3 ? dash.colors[0] : 'var(--cds-chart-muted)'));
+  g.append('text').attr('class', 'cq-lbl').attr('x', (d) => x(d.avg_share) + 6).attr('y', (d) => y(d.feature) + y.bandwidth() / 2).attr('dy', '0.35em').text((d) => `${cq.f.one(d.avg_share)}%`);
+  g.append('rect').attr('x', 0).attr('width', w).attr('y', (d) => y(d.feature) - 3).attr('height', y.bandwidth() + 6).attr('fill', 'transparent')
+    .on('mousemove', (event, d) => t.show(event, [d.feature, `Average share ${cq.f.one(d.avg_share)}%`, `Average rank ${cq.f.one(d.avg_rank)}`, `Top 5 in ${d.top5_models} of 5 models`]))
+    .on('mouseleave', () => t.hide());
+});
+
+dash.draw('heat', (tb) => {
+  tb.replaceChildren();
+  const g = dash.data('importance');
+  if (g.status !== 'ok') return;
+  const cols = ['late_logistic', 'late_lightgbm', 'days_ridge', 'days_lightgbm', 'days_cox'];
+  const rowsNow = g.data.filter((d) => d.method === window.cqMethod).sort((a, b) => b.avg_share - a.avg_share);
+  for (const r of rowsNow) {
+    const tr = document.createElement('tr');
+    tr.dataset.key = `${encodeURIComponent(r.method)},${encodeURIComponent(r.feature)}`;
+    const name = document.createElement('td');
+    name.textContent = r.feature;
+    tr.append(name);
+    for (const c of cols) {
+      const td = document.createElement('td');
+      const v = r[c] ?? 0;
+      td.textContent = cq.f.one(v);
+      td.style.background = `color-mix(in srgb, ${dash.colors[0]} ${Math.min(80, Math.round(v * 2))}%, transparent)`;
+      if (v > 25) td.style.color = 'var(--color-bg)';
+      tr.append(td);
+    }
+    tb.append(tr);
+  }
+});
+</script>
+
+<script>
+dash.draw('bundling', (el) => {
+  if (!cq.ok('bundling')) return cq.failed(el, ['bundling']);
+  const data = cq.rows('bundling');
+  const lab = (d) => (d.conditions >= 7 ? '7+' : String(d.conditions));
+  const H = 260, m = { t: 12, r: 16, b: 38, l: 42 };
+  const { svg, w } = cq.svgIn(el, H);
+  const vals = data.flatMap((d) => [d.predicted_keyword, d.predicted_jev, d.actual_jev]).filter((v) => v != null);
+  const y = d3.scaleLinear([Math.max(0, d3.min(vals) - 0.05), Math.min(1, d3.max(vals) + 0.05)], [H - m.b, m.t]).nice();
+  const x = d3.scalePoint(data.map(lab), [m.l + 10, w - m.r - 10]);
+  cq.grid(svg, y, false, m.l, w - m.r);
+  svg.append('g').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5).tickFormat(d3.format('.0%')).tickSizeOuter(0)).call(cq.axisClean);
+  svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).tickSizeOuter(0)).call(cq.axisClean);
+  svg.append('text').attr('class', 'cq-tick').attr('x', (m.l + w - m.r) / 2).attr('y', H - 4).attr('text-anchor', 'middle').text('Conditions bundled in one application');
+  const series = [['predicted_keyword', dash.colors[1]], ['predicted_jev', dash.colors[0]]];
+  for (const [k, col] of series) {
+    const pts = data.filter((d) => d[k] != null);
+    svg.append('path').datum(pts).attr('fill', 'none').attr('stroke', col).attr('stroke-width', 2).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round')
+      .attr('d', d3.line().x((d) => x(lab(d))).y((d) => y(d[k])));
+    svg.append('g').selectAll('circle').data(pts).join('circle').attr('cx', (d) => x(lab(d))).attr('cy', (d) => y(d[k])).attr('r', 3).attr('fill', col);
+  }
+  svg.append('g').selectAll('circle').data(data.filter((d) => d.actual_jev != null)).join('circle')
+    .attr('cx', (d) => x(lab(d))).attr('cy', (d) => y(d.actual_jev)).attr('r', 5).attr('fill', 'none').attr('stroke', dash.colors[0]).attr('stroke-width', 1.5);
+  const t = cq.tip(el);
+  const step = data.length > 1 ? x(lab(data[1])) - x(lab(data[0])) : w;
+  svg.append('g').selectAll('rect').data(data).join('rect')
+    .attr('x', (d) => x(lab(d)) - step / 2).attr('width', step).attr('y', m.t).attr('height', H - m.b - m.t).attr('fill', 'transparent')
+    .on('mousemove', (event, d) => t.show(event, [`${lab(d)} conditions`, `Predicted, JEV count ${cq.dash_(d.predicted_jev, cq.f.pct0)}`, `Predicted, keyword count ${cq.dash_(d.predicted_keyword, cq.f.pct0)}`, `Actually late, JEV count ${cq.dash_(d.actual_jev, cq.f.pct0)}`, `${cq.dash_(d.applications_jev, cq.f.int)} applications (JEV count)`]))
+    .on('mouseleave', () => t.hide());
+});
+
+dash.draw('cox', (el) => {
+  if (!cq.ok('cox_effects')) return cq.failed(el, ['cox_effects']);
+  const data = cq.rows('cox_effects').slice().sort((a, b) => b.ratio - a.ratio);
+  const NO_EFFECT = 1;
+  const rowH = 20, m = { t: 22, r: 16, b: 30 };
+  const H = m.t + m.b + rowH * data.length;
+  const { svg, w } = cq.svgIn(el, H);
+  m.l = cq.leftMargin(svg, data.map((d) => d.feature), w);
+  const x = d3.scaleLog([d3.min(data, (d) => d.low) * 0.92, d3.max(data, (d) => d.high) * 1.08], [m.l, w - m.r]);
+  const y = d3.scaleBand(data.map((d) => d.feature), [m.t, H - m.b]).padding(0.2);
+  const ticks = [];
+  for (const v of [1, 0.8, 0.7, 0.6, 0.5, 1.25, 1.5, 2, 3]) {   // 1 first so it is always kept
+    if (v < x.domain()[0] || v > x.domain()[1]) continue;
+    if (ticks.every((k) => Math.abs(x(k) - x(v)) >= 36)) ticks.push(v);
+  }
+  ticks.sort((a, b) => a - b);
+  for (const v of ticks) svg.append('line').attr('x1', x(v)).attr('x2', x(v)).attr('y1', m.t).attr('y2', H - m.b).attr('stroke', 'var(--cds-chart-grid)');
+  svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).tickValues(ticks).tickFormat(d3.format('.2~f')).tickSizeOuter(0)).call(cq.axisClean);
+  svg.append('line').attr('x1', x(NO_EFFECT)).attr('x2', x(NO_EFFECT)).attr('y1', m.t - 6).attr('y2', H - m.b).attr('stroke', 'var(--cds-chart-reference)').attr('stroke-dasharray', '4 3');
+  svg.append('text').attr('class', 'cq-tick').attr('x', x(NO_EFFECT)).attr('y', m.t - 10).attr('text-anchor', 'middle').text('No effect');
+  // side captions only where they clear the "No effect" label
+  const half = cq.maxText(svg, ['No effect']) / 2 + 8;
+  if (m.l + cq.maxText(svg, ['← slower']) < x(NO_EFFECT) - half) svg.append('text').attr('class', 'cq-tick').attr('x', m.l).attr('y', m.t - 10).text('← slower');
+  if (w - m.r - cq.maxText(svg, ['faster →']) > x(NO_EFFECT) + half) svg.append('text').attr('class', 'cq-tick').attr('x', w - m.r).attr('y', m.t - 10).attr('text-anchor', 'end').text('faster →');
+  const t = cq.tip(el);
+  const g = svg.append('g').selectAll('g').data(data).join('g').attr('transform', (d) => `translate(0,${y(d.feature) + y.bandwidth() / 2})`);
+  g.append('text').attr('class', 'cq-lbl').attr('x', m.l - 8).attr('dy', '0.35em').attr('text-anchor', 'end').text((d) => cq.clip(svg, d.feature, m.l - 12));
+  g.append('line').attr('x1', (d) => x(d.low)).attr('x2', (d) => x(d.high)).attr('stroke', 'var(--cds-chart-muted)').attr('stroke-width', 2).attr('stroke-linecap', 'round');
+  g.append('circle').attr('cx', (d) => x(d.ratio)).attr('r', 4).attr('fill', (d) => (d.ratio < NO_EFFECT ? dash.colors[1] : dash.colors[0]));
+  g.append('rect').attr('x', 0).attr('width', w).attr('y', -rowH / 2).attr('height', rowH).attr('fill', 'transparent')
+    .on('mousemove', (event, d) => t.show(event, [d.feature, `Speed ratio ${d3.format('.2f')(d.ratio)}`, `95% range ${d3.format('.2f')(d.low)}–${d3.format('.2f')(d.high)}`]))
+    .on('mouseleave', () => t.hide());
+});
+</script>
+
+<script>
+dash.draw('topics', (el) => {
+  if (!cq.ok('topic_rates')) return cq.failed(el, ['topic_rates']);
+  const data = cq.rows('topic_rates').slice().sort((a, b) => b.keyword_pct - a.keyword_pct);
+  const rowH = 24, m = { t: 6, r: 40, b: 30 };
+  const H = m.t + m.b + rowH * data.length;
+  const { svg, w } = cq.svgIn(el, H);
+  m.l = cq.leftMargin(svg, data.map((d) => d.topic), w);
+  const x = d3.scaleLinear([0, d3.max(data, (d) => Math.max(d.keyword_pct, d.jev_pct))], [m.l, w - m.r]).nice();
+  const y = d3.scaleBand(data.map((d) => d.topic), [m.t, H - m.b]).padding(0.2);
+  cq.grid(svg, x, true, m.t, H - m.b);
+  svg.append('g').attr('transform', `translate(0,${H - m.b})`)
+    .call(d3.axisBottom(x).ticks(Math.max(2, Math.floor((w - m.l - m.r) / 60))).tickFormat((v) => `${v}%`).tickSizeOuter(0)).call(cq.axisClean);
+  const t = cq.tip(el);
+  const g = svg.append('g').selectAll('g').data(data).join('g').attr('transform', (d) => `translate(0,${y(d.topic) + y.bandwidth() / 2})`);
+  g.append('text').attr('class', 'cq-lbl').attr('x', m.l - 8).attr('dy', '0.35em').attr('text-anchor', 'end').text((d) => cq.clip(svg, d.topic, m.l - 12));
+  g.append('line').attr('x1', (d) => x(d.keyword_pct)).attr('x2', (d) => x(d.jev_pct)).attr('stroke', 'var(--cds-chart-muted)').attr('stroke-width', 2);
+  g.append('circle').attr('cx', (d) => x(d.keyword_pct)).attr('r', 5).attr('fill', 'var(--cds-chart-muted)');
+  g.append('circle').attr('cx', (d) => x(d.jev_pct)).attr('r', 5).attr('fill', dash.colors[0]);
+  g.append('rect').attr('x', 0).attr('width', w).attr('y', -rowH / 2).attr('height', rowH).attr('fill', 'transparent')
+    .on('mousemove', (event, d) => t.show(event, [d.topic, `Keyword tagger ${cq.f.one(d.keyword_pct)}%`, `JEV ${cq.f.one(d.jev_pct)}%`]))
+    .on('mouseleave', () => t.hide());
+});
+
+dash.draw('jevSets', (tb) => cq.table(tb, 'jev_feature_sets', [
+  { field: 'features' }, { field: 'logistic_auc', fmt: cq.f.auc }, { field: 'lightgbm_auc', fmt: cq.f.auc }, { field: 'lightgbm_sd', fmt: cq.f.auc },
+]));
+dash.draw('jevModels', (tb) => cq.table(tb, 'jev_model_scores', [
+  { field: 'model' }, { field: 'c_keyword', fmt: cq.f.auc }, { field: 'c_jev', fmt: cq.f.auc }, { field: 'auc_keyword', fmt: cq.f.auc }, { field: 'auc_jev', fmt: cq.f.auc },
+]));
+dash.draw('externalTable', (tb) => cq.table(tb, 'external_tests', [
+  { field: 'features' }, { field: 'test' }, { field: 'late_auc', fmt: cq.f.auc }, { field: 'days_c', fmt: cq.f.auc },
+], (r) => `${encodeURIComponent(r.test)},${encodeURIComponent(r.features)}`));
+dash.draw('constraintsTable', (tb) => cq.table(tb, 'constraints_within', [
+  { field: 'constraint' }, { field: 'late_with', fmt: cq.f.one }, { field: 'late_without', fmt: cq.f.one },
+  { field: 'diff_within_borough', fmt: (v) => (v > 0 ? '+' : '') + cq.f.one(v) }, { field: 'boroughs', fmt: cq.f.int },
+]));
+</script>
+
+</main>
+<footer class="site-foot">
+  <p>Data: PlanIt-derived extract of London planning applications, discharge-of-condition applications submitted 2021–2025. Description labels by Jev (TypeSafe) via OpenRouter. External data from planning.data.gov.uk and the GLA's house price per square metre dataset.</p>
+</footer>
+</body>
+</html>

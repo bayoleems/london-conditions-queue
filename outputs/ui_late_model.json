@@ -1,0 +1,388 @@
+{
+ "notebook": "02_late_model.ipynb",
+ "n_applications": 16284,
+ "late_share": 0.5624539425202653,
+ "train": {
+  "n": 10705,
+  "late_share": 0.5828117702008407
+ },
+ "test": {
+  "n": 5579,
+  "late_share": 0.5233912887614268
+ },
+ "scores": [
+  {
+   "model": "Always 'late'",
+   "AUC": 0.5,
+   "Accuracy": 0.5233912888,
+   "Brier": 0.2529836412
+  },
+  {
+   "model": "Borough late rate",
+   "AUC": 0.5950749458,
+   "Accuracy": 0.5524287507,
+   "Brier": 0.2477199469
+  },
+  {
+   "model": "Logistic regression",
+   "AUC": 0.6149132308,
+   "Accuracy": 0.5753719305,
+   "Brier": 0.2406851995
+  },
+  {
+   "model": "LightGBM",
+   "AUC": 0.6283203336,
+   "Accuracy": 0.5841548665,
+   "Brier": 0.2403159631
+  },
+  {
+   "model": "Logistic, no app_size",
+   "AUC": 0.5989841943,
+   "Accuracy": 0.5692776483,
+   "Brier": 0.2436290557
+  },
+  {
+   "model": "LightGBM, no app_size",
+   "AUC": 0.6054956158,
+   "Accuracy": 0.5769851228,
+   "Brier": 0.2463334682
+  }
+ ],
+ "risk_deciles": [
+  {
+   "decile": 1,
+   "applications": 558,
+   "predicted": 0.2853712104,
+   "actually_late": 0.3279569892
+  },
+  {
+   "decile": 2,
+   "applications": 558,
+   "predicted": 0.3919678055,
+   "actually_late": 0.3888888889
+  },
+  {
+   "decile": 3,
+   "applications": 558,
+   "predicted": 0.4500733271,
+   "actually_late": 0.4695340502
+  },
+  {
+   "decile": 4,
+   "applications": 558,
+   "predicted": 0.5013983011,
+   "actually_late": 0.5
+  },
+  {
+   "decile": 5,
+   "applications": 558,
+   "predicted": 0.5480255216,
+   "actually_late": 0.5035842294
+  },
+  {
+   "decile": 6,
+   "applications": 557,
+   "predicted": 0.5910235628,
+   "actually_late": 0.5116696589
+  },
+  {
+   "decile": 7,
+   "applications": 558,
+   "predicted": 0.6353336164,
+   "actually_late": 0.5896057348
+  },
+  {
+   "decile": 8,
+   "applications": 558,
+   "predicted": 0.6839083008,
+   "actually_late": 0.5663082437
+  },
+  {
+   "decile": 9,
+   "applications": 558,
+   "predicted": 0.7471232949,
+   "actually_late": 0.6218637993
+  },
+  {
+   "decile": 10,
+   "applications": 558,
+   "predicted": 0.864160988,
+   "actually_late": 0.7544802867
+  }
+ ],
+ "importance_keyword_gbm": [
+  {
+   "feature": "app_size",
+   "auc_drop": 0.0531020777
+  },
+  {
+   "feature": "area_name",
+   "auc_drop": 0.050377923
+  },
+  {
+   "feature": "n_cond_c",
+   "auc_drop": 0.0160708527
+  },
+  {
+   "feature": "desc_words",
+   "auc_drop": 0.0130393546
+  },
+  {
+   "feature": "log_homes",
+   "auc_drop": 0.0087015667
+  },
+  {
+   "feature": "n_topics",
+   "auc_drop": 0.0047985905
+  },
+  {
+   "feature": "t_drainage_flood",
+   "auc_drop": 0.0047293117
+  },
+  {
+   "feature": "lag_days",
+   "auc_drop": 0.0046801635
+  },
+  {
+   "feature": "t_construction_logistics_management",
+   "auc_drop": 0.0040869598
+  },
+  {
+   "feature": "has_parent",
+   "auc_drop": 0.0035361296
+  },
+  {
+   "feature": "t_energy_carbon",
+   "auc_drop": 0.0031994596
+  },
+  {
+   "feature": "t_contamination_ground",
+   "auc_drop": 0.0029493398
+  }
+ ],
+ "bundling_keyword": [
+  {
+   "conditions": 1,
+   "predicted late (all else equal)": 0.5438097023,
+   "actually late (raw)": 0.5027250927
+  },
+  {
+   "conditions": 2,
+   "predicted late (all else equal)": 0.5952436842,
+   "actually late (raw)": 0.5594989562
+  },
+  {
+   "conditions": 3,
+   "predicted late (all else equal)": 0.6448153543,
+   "actually late (raw)": 0.6172248804
+  },
+  {
+   "conditions": 4,
+   "predicted late (all else equal)": 0.6916309211,
+   "actually late (raw)": 0.6377952756
+  },
+  {
+   "conditions": 5,
+   "predicted late (all else equal)": 0.7349881801,
+   "actually late (raw)": 0.6956521739
+  },
+  {
+   "conditions": 7,
+   "predicted late (all else equal)": 0.8096395171,
+   "actually late (raw)": 0.8833333333
+  }
+ ],
+ "jev": {
+  "coverage": 1.0,
+  "compare": [
+   {
+    "description features": "No description features",
+    "Logistic AUC": 0.5925409053,
+    "LightGBM AUC": 0.5963874435,
+    "LightGBM \u00b1 (5 seeds)": 0.0012197895
+   },
+   {
+    "description features": "Keyword description features",
+    "Logistic AUC": 0.6149132308,
+    "LightGBM AUC": 0.626648073,
+    "LightGBM \u00b1 (5 seeds)": 0.0020551254
+   },
+   {
+    "description features": "JEV description features",
+    "Logistic AUC": 0.6234525288,
+    "LightGBM AUC": 0.63574495,
+    "LightGBM \u00b1 (5 seeds)": 0.0013227535
+   }
+  ],
+  "bundling": [
+   {
+    "conditions bundled": 1,
+    "predicted late (JEV count)": 0.5274473443,
+    "actually late (JEV count)": 0.4982170148,
+    "applications": 3926
+   },
+   {
+    "conditions bundled": 2,
+    "predicted late (JEV count)": 0.573614315,
+    "actually late (JEV count)": 0.5267175573,
+    "applications": 786
+   },
+   {
+    "conditions bundled": 3,
+    "predicted late (JEV count)": 0.6186377059,
+    "actually late (JEV count)": 0.5849582173,
+    "applications": 359
+   },
+   {
+    "conditions bundled": 4,
+    "predicted late (JEV count)": 0.6618402602,
+    "actually late (JEV count)": 0.6076555024,
+    "applications": 209
+   },
+   {
+    "conditions bundled": 5,
+    "predicted late (JEV count)": 0.7026466643,
+    "actually late (JEV count)": 0.6754385965,
+    "applications": 114
+   },
+   {
+    "conditions bundled": 7,
+    "predicted late (JEV count)": 0.7754225795,
+    "actually late (JEV count)": 0.78,
+    "applications": 100
+   }
+  ],
+  "importance_gbm": [
+   {
+    "feature": "Borough (area_name)",
+    "auc_drop": 0.0569489809
+   },
+   {
+    "feature": "Application size (app_size)",
+    "auc_drop": 0.0563562451
+   },
+   {
+    "feature": "Conditions bundled, Jev (jev_n_cond_c)",
+    "auc_drop": 0.0164451179
+   },
+   {
+    "feature": "Number of homes (log_homes)",
+    "auc_drop": 0.0108856413
+   },
+   {
+    "feature": "Description length (desc_words)",
+    "auc_drop": 0.0108821638
+   },
+   {
+    "feature": "Energy & carbon, Jev (jev_energy_carbon)",
+    "auc_drop": 0.0092340822
+   },
+   {
+    "feature": "Construction logistics / management, Jev (jev_construction_logistics_management)",
+    "auc_drop": 0.0045174612
+   },
+   {
+    "feature": "Number of topics, Jev (jev_n_topics)",
+    "auc_drop": 0.0042511561
+   },
+   {
+    "feature": "Drainage & flood, Jev (jev_drainage_flood)",
+    "auc_drop": 0.0033484539
+   },
+   {
+    "feature": "Contamination & ground, Jev (jev_contamination_ground)",
+    "auc_drop": 0.0027841388
+   },
+   {
+    "feature": "Secured by Design, Jev (jev_secured_by_design)",
+    "auc_drop": 0.0021265762
+   },
+   {
+    "feature": "Landscaping & trees, Jev (jev_landscaping_trees)",
+    "auc_drop": 0.002002976
+   }
+  ],
+  "topic_rates": [
+   {
+    "topic": "Waste, cycle & parking",
+    "keyword tagger %": 76.6089412921,
+    "JEV %": 17.643085237
+   },
+   {
+    "topic": "Landscaping & trees",
+    "keyword tagger %": 61.1766150823,
+    "JEV %": 18.1957749939
+   },
+   {
+    "topic": "Materials & design detail",
+    "keyword tagger %": 20.3267010563,
+    "JEV %": 18.115942029
+   },
+   {
+    "topic": "Piling & structure",
+    "keyword tagger %": 19.9521002211,
+    "JEV %": 4.452223041
+   },
+   {
+    "topic": "Energy & carbon",
+    "keyword tagger %": 17.5509702776,
+    "JEV %": 11.9626627364
+   },
+   {
+    "topic": "Construction logistics / management",
+    "keyword tagger %": 10.2493244903,
+    "JEV %": 16.7342176369
+   },
+   {
+    "topic": "Boundary & lighting",
+    "keyword tagger %": 9.9361336281,
+    "JEV %": 6.4234831737
+   },
+   {
+    "topic": "Drainage & flood",
+    "keyword tagger %": 9.5860967821,
+    "JEV %": 10.0957995578
+   },
+   {
+    "topic": "Noise, vibration & air",
+    "keyword tagger %": 9.0395480226,
+    "JEV %": 11.4161139769
+   },
+   {
+    "topic": "Highways & travel",
+    "keyword tagger %": 7.6762466225,
+    "JEV %": 9.377302874
+   },
+   {
+    "topic": "Contamination & ground",
+    "keyword tagger %": 7.1972488332,
+    "JEV %": 7.9955784819
+   },
+   {
+    "topic": "Ecology & biodiversity",
+    "keyword tagger %": 5.6804225006,
+    "JEV %": 8.8676000983
+   },
+   {
+    "topic": "Accessibility",
+    "keyword tagger %": 2.2353230165,
+    "JEV %": 1.4922623434
+   },
+   {
+    "topic": "Archaeology & heritage",
+    "keyword tagger %": 1.9958241218,
+    "JEV %": 2.1493490543
+   },
+   {
+    "topic": "Fire safety",
+    "keyword tagger %": 1.7010562515,
+    "JEV %": 1.5291083272
+   },
+   {
+    "topic": "Secured by Design",
+    "keyword tagger %": 0.8228936379,
+    "JEV %": 2.1125030705
+   }
+  ]
+ }
+}

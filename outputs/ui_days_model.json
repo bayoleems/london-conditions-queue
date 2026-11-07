@@ -1,0 +1,938 @@
+{
+ "notebook": "03_days_model.ipynb",
+ "days_summary": {
+  "median_decided": 60.0,
+  "n_undecided": 854,
+  "p90_coverage": 0.9326025172553796,
+  "per_condition_slowdown": 0.08108206412276386,
+  "per_condition_slowdown_jev": 0.09148331785707009
+ },
+ "scores": [
+  {
+   "model": "Borough median (baseline)",
+   "C-index": 0.5467921053,
+   "MAE (days)": 36.5603938287,
+   "AUC (late)": null
+  },
+  {
+   "model": "Late \u00b7 logistic",
+   "C-index": 0.5747046449,
+   "MAE (days)": null,
+   "AUC (late)": 0.6149132308
+  },
+  {
+   "model": "Late \u00b7 LightGBM",
+   "C-index": 0.582903405,
+   "MAE (days)": null,
+   "AUC (late)": 0.6283203336
+  },
+  {
+   "model": "Days \u00b7 ridge",
+   "C-index": 0.5612865445,
+   "MAE (days)": 39.6238251861,
+   "AUC (late)": null
+  },
+  {
+   "model": "Days \u00b7 LightGBM",
+   "C-index": 0.5579932614,
+   "MAE (days)": 41.3878622653,
+   "AUC (late)": null
+  },
+  {
+   "model": "Days \u00b7 Cox (survival)",
+   "C-index": 0.5700465492,
+   "MAE (days)": null,
+   "AUC (late)": null
+  }
+ ],
+ "ranges_by_conditions": [
+  {
+   "conditions": 1,
+   "applications": 4059,
+   "P50": 66.5574672033,
+   "P90": 184.5991914573,
+   "actual_median": 56.0
+  },
+  {
+   "conditions": 2,
+   "applications": 438,
+   "P50": 72.8831222484,
+   "P90": 200.2617962994,
+   "actual_median": 58.0
+  },
+  {
+   "conditions": 3,
+   "applications": 182,
+   "P50": 80.0416789217,
+   "P90": 211.5867353856,
+   "actual_median": 60.5
+  },
+  {
+   "conditions": 4,
+   "applications": 109,
+   "P50": 86.7701733549,
+   "P90": 230.1675722128,
+   "actual_median": 62.0
+  },
+  {
+   "conditions": 5,
+   "applications": 57,
+   "P50": 94.9635663791,
+   "P90": 238.8132781103,
+   "actual_median": 65.0
+  },
+  {
+   "conditions": 6,
+   "applications": 39,
+   "P50": 103.7265216709,
+   "P90": 252.8118906142,
+   "actual_median": 80.0
+  },
+  {
+   "conditions": 7,
+   "applications": 42,
+   "P50": 113.2510867354,
+   "P90": 274.2951440532,
+   "actual_median": 75.0
+  }
+ ],
+ "cox_effects": [
+  {
+   "feature": "Application size: Large (app_size)",
+   "speed ratio": 0.638309945,
+   "low": 0.5594939435,
+   "high": 0.7282287693
+  },
+  {
+   "feature": "Borough: Merton (area_name)",
+   "speed ratio": 0.6826618878,
+   "low": 0.5967733466,
+   "high": 0.7809116404
+  },
+  {
+   "feature": "Borough: Islington (area_name)",
+   "speed ratio": 0.6896998448,
+   "low": 0.4946855988,
+   "high": 0.9615923267
+  },
+  {
+   "feature": "Borough: Havering (area_name)",
+   "speed ratio": 0.6925457314,
+   "low": 0.4875806931,
+   "high": 0.9836722348
+  },
+  {
+   "feature": "Borough: Haringey (area_name)",
+   "speed ratio": 0.7200267491,
+   "low": 0.5626946285,
+   "high": 0.9213496861
+  },
+  {
+   "feature": "Application size: Medium (app_size)",
+   "speed ratio": 0.7377205663,
+   "low": 0.6530987786,
+   "high": 0.8333067703
+  },
+  {
+   "feature": "Borough: Bexley (area_name)",
+   "speed ratio": 0.7561039031,
+   "low": 0.6523772591,
+   "high": 0.8763228705
+  },
+  {
+   "feature": "Conditions bundled (n_cond_c)",
+   "speed ratio": 0.9116502548,
+   "low": 0.8913104627,
+   "high": 0.9324542029
+  },
+  {
+   "feature": "Description length (desc_words)",
+   "speed ratio": 0.9166759824,
+   "low": 0.8894965031,
+   "high": 0.9446859587
+  },
+  {
+   "feature": "Scheme's earlier sign-offs (scheme_prior_apps)",
+   "speed ratio": 0.9742890023,
+   "low": 0.950286302,
+   "high": 0.998897972
+  },
+  {
+   "feature": "Borough workload, last 4 weeks (boro_workload_28d)",
+   "speed ratio": 1.0423058095,
+   "low": 1.01068814,
+   "high": 1.0749125844
+  },
+  {
+   "feature": "Agent named (has_agent)",
+   "speed ratio": 1.0456226416,
+   "low": 1.0132073418,
+   "high": 1.0790749963
+  },
+  {
+   "feature": "Borough late rate, last year (boro_late_rate_365d)",
+   "speed ratio": 1.0570008842,
+   "low": 1.0325470996,
+   "high": 1.0820338071
+  },
+  {
+   "feature": "Permission matched (has_parent)",
+   "speed ratio": 1.0957005057,
+   "low": 1.0690597006,
+   "high": 1.1230051956
+  },
+  {
+   "feature": "Borough: Kingston (area_name)",
+   "speed ratio": 1.1433303565,
+   "low": 1.0169702221,
+   "high": 1.2853909345
+  },
+  {
+   "feature": "Borough: Enfield (area_name)",
+   "speed ratio": 1.1684991246,
+   "low": 1.0301127713,
+   "high": 1.3254764355
+  },
+  {
+   "feature": "Borough: Brent (area_name)",
+   "speed ratio": 1.2176343843,
+   "low": 1.0837801391,
+   "high": 1.3680205425
+  },
+  {
+   "feature": "Borough: Hounslow (area_name)",
+   "speed ratio": 1.2925632042,
+   "low": 1.1595508753,
+   "high": 1.4408334058
+  },
+  {
+   "feature": "Borough: Hillingdon (area_name)",
+   "speed ratio": 1.4765501305,
+   "low": 1.1068286945,
+   "high": 1.9697721054
+  },
+  {
+   "feature": "Borough: Kensington (area_name)",
+   "speed ratio": 1.8577722434,
+   "low": 1.5699531594,
+   "high": 2.1983571213
+  },
+  {
+   "feature": "Borough: Old Oak Park Royal (area_name)",
+   "speed ratio": 2.3767054022,
+   "low": 1.8509896461,
+   "high": 3.0517342876
+  }
+ ],
+ "importance_keyword": [
+  {
+   "feature": "Application size (app_size)",
+   "average share %": 28.4196245286,
+   "average rank": 1.6,
+   "top 5 in how many models": 5,
+   "Late \u00b7 logistic": 37.2,
+   "Late \u00b7 LightGBM": 31.3,
+   "Days \u00b7 ridge": 29.2,
+   "Days \u00b7 LightGBM": 22.5,
+   "Days \u00b7 Cox (survival)": 21.9
+  },
+  {
+   "feature": "Borough (area_name)",
+   "average share %": 27.0224212145,
+   "average rank": 1.6,
+   "top 5 in how many models": 5,
+   "Late \u00b7 logistic": 17.0,
+   "Late \u00b7 LightGBM": 31.6,
+   "Days \u00b7 ridge": 17.3,
+   "Days \u00b7 LightGBM": 33.8,
+   "Days \u00b7 Cox (survival)": 35.4
+  },
+  {
+   "feature": "Conditions bundled (n_cond_c)",
+   "average share %": 10.3338449255,
+   "average rank": 3.4,
+   "top 5 in how many models": 5,
+   "Late \u00b7 logistic": 8.3,
+   "Late \u00b7 LightGBM": 9.0,
+   "Days \u00b7 ridge": 10.0,
+   "Days \u00b7 LightGBM": 14.7,
+   "Days \u00b7 Cox (survival)": 9.6
+  },
+  {
+   "feature": "Condition topics (16 t_* flags)",
+   "average share %": 8.1006710418,
+   "average rank": 4.0,
+   "top 5 in how many models": 5,
+   "Late \u00b7 logistic": 8.0,
+   "Late \u00b7 LightGBM": 9.7,
+   "Days \u00b7 ridge": 7.0,
+   "Days \u00b7 LightGBM": 9.8,
+   "Days \u00b7 Cox (survival)": 6.0
+  },
+  {
+   "feature": "Description length (desc_words)",
+   "average share %": 5.3897552152,
+   "average rank": 5.6,
+   "top 5 in how many models": 2,
+   "Late \u00b7 logistic": 5.3,
+   "Late \u00b7 LightGBM": 6.4,
+   "Days \u00b7 ridge": 5.0,
+   "Days \u00b7 LightGBM": 5.6,
+   "Days \u00b7 Cox (survival)": 4.6
+  },
+  {
+   "feature": "Application type (app_type)",
+   "average share %": 4.5037789453,
+   "average rank": 10.0,
+   "top 5 in how many models": 1,
+   "Late \u00b7 logistic": 2.6,
+   "Late \u00b7 LightGBM": 0.5,
+   "Days \u00b7 ridge": 18.4,
+   "Days \u00b7 LightGBM": 0.9,
+   "Days \u00b7 Cox (survival)": 0.1
+  },
+  {
+   "feature": "Permission matched (has_parent)",
+   "average share %": 2.8005711475,
+   "average rank": 9.6,
+   "top 5 in how many models": 0,
+   "Late \u00b7 logistic": 3.8,
+   "Late \u00b7 LightGBM": 1.5,
+   "Days \u00b7 ridge": 4.7,
+   "Days \u00b7 LightGBM": 0.0,
+   "Days \u00b7 Cox (survival)": 4.0
+  },
+  {
+   "feature": "Homes known (homes_known)",
+   "average share %": 2.7886065065,
+   "average rank": 10.4,
+   "top 5 in how many models": 2,
+   "Late \u00b7 logistic": 6.9,
+   "Late \u00b7 LightGBM": 0.0,
+   "Days \u00b7 ridge": 2.4,
+   "Days \u00b7 LightGBM": 0.0,
+   "Days \u00b7 Cox (survival)": 4.7
+  },
+  {
+   "feature": "Agent named (has_agent)",
+   "average share %": 2.5366493431,
+   "average rank": 8.4,
+   "top 5 in how many models": 0,
+   "Late \u00b7 logistic": 2.7,
+   "Late \u00b7 LightGBM": 1.1,
+   "Days \u00b7 ridge": 3.2,
+   "Days \u00b7 LightGBM": 1.2,
+   "Days \u00b7 Cox (survival)": 4.4
+  },
+  {
+   "feature": "Number of topics (n_topics)",
+   "average share %": 1.7422345822,
+   "average rank": 10.0,
+   "top 5 in how many models": 0,
+   "Late \u00b7 logistic": 0.3,
+   "Late \u00b7 LightGBM": 2.2,
+   "Days \u00b7 ridge": 0.7,
+   "Days \u00b7 LightGBM": 5.2,
+   "Days \u00b7 Cox (survival)": 0.2
+  },
+  {
+   "feature": "Scheme size band (band)",
+   "average share %": 1.3298578808,
+   "average rank": 13.6,
+   "top 5 in how many models": 0,
+   "Late \u00b7 logistic": 5.0,
+   "Late \u00b7 LightGBM": 0.1,
+   "Days \u00b7 ridge": 0.0,
+   "Days \u00b7 LightGBM": 0.0,
+   "Days \u00b7 Cox (survival)": 1.6
+  },
+  {
+   "feature": "Number of homes (log_homes)",
+   "average share %": 1.2937205896,
+   "average rank": 13.6,
+   "top 5 in how many models": 0,
+   "Late \u00b7 logistic": 0.0,
+   "Late \u00b7 LightGBM": 4.0,
+   "Days \u00b7 ridge": 0.0,
+   "Days \u00b7 LightGBM": 2.5,
+   "Days \u00b7 Cox (survival)": 0.0
+  },
+  {
+   "feature": "Scheme's earlier sign-offs (scheme_prior_apps)",
+   "average share %": 1.0809845819,
+   "average rank": 12.4,
+   "top 5 in how many models": 0,
+   "Late \u00b7 logistic": 1.7,
+   "Late \u00b7 LightGBM": 0.0,
+   "Days \u00b7 ridge": 0.5,
+   "Days \u00b7 LightGBM": 0.0,
+   "Days \u00b7 Cox (survival)": 3.2
+  },
+  {
+   "feature": "Scheme had a refusal (scheme_prior_refusal)",
+   "average share %": 0.9711343542,
+   "average rank": 11.4,
+   "top 5 in how many models": 0,
+   "Late \u00b7 logistic": 0.4,
+   "Late \u00b7 LightGBM": 0.3,
+   "Days \u00b7 ridge": 1.3,
+   "Days \u00b7 LightGBM": 1.0,
+   "Days \u00b7 Cox (survival)": 1.8
+  },
+  {
+   "feature": "Days since permission (lag_days)",
+   "average share %": 0.6358651611,
+   "average rank": 13.4,
+   "top 5 in how many models": 0,
+   "Late \u00b7 logistic": 0.1,
+   "Late \u00b7 LightGBM": 0.9,
+   "Days \u00b7 ridge": 0.0,
+   "Days \u00b7 LightGBM": 2.2,
+   "Days \u00b7 Cox (survival)": 0.0
+  },
+  {
+   "feature": "Borough workload, last 4 weeks (boro_workload_28d)",
+   "average share %": 0.4720778624,
+   "average rank": 15.6,
+   "top 5 in how many models": 0,
+   "Late \u00b7 logistic": 0.1,
+   "Late \u00b7 LightGBM": 0.0,
+   "Days \u00b7 ridge": 0.2,
+   "Days \u00b7 LightGBM": 0.0,
+   "Days \u00b7 Cox (survival)": 2.1
+  },
+  {
+   "feature": "Day of week submitted (dow)",
+   "average share %": 0.3158107469,
+   "average rank": 13.8,
+   "top 5 in how many models": 0,
+   "Late \u00b7 logistic": 0.2,
+   "Late \u00b7 LightGBM": 0.7,
+   "Days \u00b7 ridge": 0.0,
+   "Days \u00b7 LightGBM": 0.6,
+   "Days \u00b7 Cox (survival)": 0.0
+  },
+  {
+   "feature": "Month submitted (month)",
+   "average share %": 0.1930435076,
+   "average rank": 15.4,
+   "top 5 in how many models": 0,
+   "Late \u00b7 logistic": 0.3,
+   "Late \u00b7 LightGBM": 0.5,
+   "Days \u00b7 ridge": 0.0,
+   "Days \u00b7 LightGBM": 0.0,
+   "Days \u00b7 Cox (survival)": 0.2
+  },
+  {
+   "feature": "Has a pre-start condition (any_precommencement)",
+   "average share %": 0.0693478655,
+   "average rank": 16.2,
+   "top 5 in how many models": 0,
+   "Late \u00b7 logistic": 0.0,
+   "Late \u00b7 LightGBM": 0.3,
+   "Days \u00b7 ridge": 0.0,
+   "Days \u00b7 LightGBM": 0.0,
+   "Days \u00b7 Cox (survival)": 0.0
+  },
+  {
+   "feature": "Borough late rate, last year (boro_late_rate_365d)",
+   "average share %": 0.0,
+   "average rank": 20.0,
+   "top 5 in how many models": 0,
+   "Late \u00b7 logistic": 0.0,
+   "Late \u00b7 LightGBM": 0.0,
+   "Days \u00b7 ridge": 0.0,
+   "Days \u00b7 LightGBM": 0.0,
+   "Days \u00b7 Cox (survival)": 0.0
+  }
+ ],
+ "importance_jev": [
+  {
+   "feature": "Application size (app_size)",
+   "average share %": 27.1026144732,
+   "average rank": 1.4,
+   "top 5 in how many models": 5,
+   "Late \u00b7 logistic": 35.4,
+   "Late \u00b7 LightGBM": 32.0,
+   "Days \u00b7 ridge": 28.1,
+   "Days \u00b7 LightGBM": 21.0,
+   "Days \u00b7 Cox (survival)": 19.0
+  },
+  {
+   "feature": "Borough (area_name)",
+   "average share %": 25.3624979444,
+   "average rank": 1.6,
+   "top 5 in how many models": 5,
+   "Late \u00b7 logistic": 18.8,
+   "Late \u00b7 LightGBM": 28.3,
+   "Days \u00b7 ridge": 18.3,
+   "Days \u00b7 LightGBM": 27.9,
+   "Days \u00b7 Cox (survival)": 33.5
+  },
+  {
+   "feature": "Condition topics, Jev (16 jev_* flags)",
+   "average share %": 11.4051847645,
+   "average rank": 3.4,
+   "top 5 in how many models": 5,
+   "Late \u00b7 logistic": 8.5,
+   "Late \u00b7 LightGBM": 12.8,
+   "Days \u00b7 ridge": 10.1,
+   "Days \u00b7 LightGBM": 18.1,
+   "Days \u00b7 Cox (survival)": 7.6
+  },
+  {
+   "feature": "Conditions bundled, Jev (jev_n_cond_c)",
+   "average share %": 11.2591102809,
+   "average rank": 4.0,
+   "top 5 in how many models": 5,
+   "Late \u00b7 logistic": 7.5,
+   "Late \u00b7 LightGBM": 8.3,
+   "Days \u00b7 ridge": 9.3,
+   "Days \u00b7 LightGBM": 17.6,
+   "Days \u00b7 Cox (survival)": 13.5
+  },
+  {
+   "feature": "Application type (app_type)",
+   "average share %": 4.5620679897,
+   "average rank": 10.8,
+   "top 5 in how many models": 1,
+   "Late \u00b7 logistic": 3.0,
+   "Late \u00b7 LightGBM": 0.3,
+   "Days \u00b7 ridge": 17.7,
+   "Days \u00b7 LightGBM": 1.8,
+   "Days \u00b7 Cox (survival)": 0.0
+  },
+  {
+   "feature": "Description length (desc_words)",
+   "average share %": 4.0905808698,
+   "average rank": 6.6,
+   "top 5 in how many models": 1,
+   "Late \u00b7 logistic": 4.1,
+   "Late \u00b7 LightGBM": 5.1,
+   "Days \u00b7 ridge": 3.6,
+   "Days \u00b7 LightGBM": 4.3,
+   "Days \u00b7 Cox (survival)": 3.4
+  },
+  {
+   "feature": "Permission matched (has_parent)",
+   "average share %": 3.1544966006,
+   "average rank": 7.6,
+   "top 5 in how many models": 0,
+   "Late \u00b7 logistic": 4.7,
+   "Late \u00b7 LightGBM": 2.1,
+   "Days \u00b7 ridge": 3.7,
+   "Days \u00b7 LightGBM": 0.2,
+   "Days \u00b7 Cox (survival)": 5.1
+  },
+  {
+   "feature": "Scheme's earlier sign-offs (scheme_prior_apps)",
+   "average share %": 2.713875653,
+   "average rank": 10.2,
+   "top 5 in how many models": 1,
+   "Late \u00b7 logistic": 3.3,
+   "Late \u00b7 LightGBM": 0.5,
+   "Days \u00b7 ridge": 2.9,
+   "Days \u00b7 LightGBM": 0.0,
+   "Days \u00b7 Cox (survival)": 6.9
+  },
+  {
+   "feature": "Homes known (homes_known)",
+   "average share %": 2.5161337819,
+   "average rank": 11.8,
+   "top 5 in how many models": 1,
+   "Late \u00b7 logistic": 6.7,
+   "Late \u00b7 LightGBM": 0.0,
+   "Days \u00b7 ridge": 2.8,
+   "Days \u00b7 LightGBM": 0.0,
+   "Days \u00b7 Cox (survival)": 3.1
+  },
+  {
+   "feature": "Number of homes (log_homes)",
+   "average share %": 1.859770312,
+   "average rank": 13.8,
+   "top 5 in how many models": 1,
+   "Late \u00b7 logistic": 0.0,
+   "Late \u00b7 LightGBM": 6.4,
+   "Days \u00b7 ridge": 0.0,
+   "Days \u00b7 LightGBM": 2.9,
+   "Days \u00b7 Cox (survival)": 0.0
+  },
+  {
+   "feature": "Agent named (has_agent)",
+   "average share %": 1.6018808381,
+   "average rank": 10.0,
+   "top 5 in how many models": 0,
+   "Late \u00b7 logistic": 2.3,
+   "Late \u00b7 LightGBM": 0.8,
+   "Days \u00b7 ridge": 1.6,
+   "Days \u00b7 LightGBM": 0.2,
+   "Days \u00b7 Cox (survival)": 3.2
+  },
+  {
+   "feature": "Scheme size band (band)",
+   "average share %": 0.9698946911,
+   "average rank": 13.8,
+   "top 5 in how many models": 0,
+   "Late \u00b7 logistic": 4.6,
+   "Late \u00b7 LightGBM": 0.0,
+   "Days \u00b7 ridge": 0.0,
+   "Days \u00b7 LightGBM": 0.0,
+   "Days \u00b7 Cox (survival)": 0.3
+  },
+  {
+   "feature": "Number of topics, Jev (jev_n_topics)",
+   "average share %": 0.8892338132,
+   "average rank": 12.2,
+   "top 5 in how many models": 0,
+   "Late \u00b7 logistic": 0.0,
+   "Late \u00b7 LightGBM": 2.0,
+   "Days \u00b7 ridge": 0.4,
+   "Days \u00b7 LightGBM": 1.8,
+   "Days \u00b7 Cox (survival)": 0.2
+  },
+  {
+   "feature": "Scheme had a refusal (scheme_prior_refusal)",
+   "average share %": 0.8861893517,
+   "average rank": 12.0,
+   "top 5 in how many models": 0,
+   "Late \u00b7 logistic": 0.4,
+   "Late \u00b7 LightGBM": 0.2,
+   "Days \u00b7 ridge": 1.6,
+   "Days \u00b7 LightGBM": 0.8,
+   "Days \u00b7 Cox (survival)": 1.5
+  },
+  {
+   "feature": "Days since permission (lag_days)",
+   "average share %": 0.5446166063,
+   "average rank": 13.8,
+   "top 5 in how many models": 0,
+   "Late \u00b7 logistic": 0.0,
+   "Late \u00b7 LightGBM": 0.7,
+   "Days \u00b7 ridge": 0.0,
+   "Days \u00b7 LightGBM": 2.0,
+   "Days \u00b7 Cox (survival)": 0.0
+  },
+  {
+   "feature": "Day of week submitted (dow)",
+   "average share %": 0.3927589102,
+   "average rank": 14.0,
+   "top 5 in how many models": 0,
+   "Late \u00b7 logistic": 0.3,
+   "Late \u00b7 LightGBM": 0.2,
+   "Days \u00b7 ridge": 0.0,
+   "Days \u00b7 LightGBM": 1.4,
+   "Days \u00b7 Cox (survival)": 0.0
+  },
+  {
+   "feature": "Borough workload, last 4 weeks (boro_workload_28d)",
+   "average share %": 0.3026345319,
+   "average rank": 16.4,
+   "top 5 in how many models": 0,
+   "Late \u00b7 logistic": 0.0,
+   "Late \u00b7 LightGBM": 0.0,
+   "Days \u00b7 ridge": 0.0,
+   "Days \u00b7 LightGBM": 0.0,
+   "Days \u00b7 Cox (survival)": 1.5
+  },
+  {
+   "feature": "Topic stated in request, Jev (jev_topic_stated)",
+   "average share %": 0.2330797295,
+   "average rank": 14.8,
+   "top 5 in how many models": 0,
+   "Late \u00b7 logistic": 0.1,
+   "Late \u00b7 LightGBM": 0.0,
+   "Days \u00b7 ridge": 0.0,
+   "Days \u00b7 LightGBM": 0.0,
+   "Days \u00b7 Cox (survival)": 1.0
+  },
+  {
+   "feature": "Month submitted (month)",
+   "average share %": 0.1482154879,
+   "average rank": 16.0,
+   "top 5 in how many models": 0,
+   "Late \u00b7 logistic": 0.3,
+   "Late \u00b7 LightGBM": 0.3,
+   "Days \u00b7 ridge": 0.0,
+   "Days \u00b7 LightGBM": 0.0,
+   "Days \u00b7 Cox (survival)": 0.1
+  },
+  {
+   "feature": "Says pre-start, Jev (jev_precommencement)",
+   "average share %": 0.0051633701,
+   "average rank": 15.8,
+   "top 5 in how many models": 0,
+   "Late \u00b7 logistic": 0.0,
+   "Late \u00b7 LightGBM": 0.0,
+   "Days \u00b7 ridge": 0.0,
+   "Days \u00b7 LightGBM": 0.0,
+   "Days \u00b7 Cox (survival)": 0.0
+  },
+  {
+   "feature": "Borough late rate, last year (boro_late_rate_365d)",
+   "average share %": 0.0,
+   "average rank": 21.0,
+   "top 5 in how many models": 0,
+   "Late \u00b7 logistic": 0.0,
+   "Late \u00b7 LightGBM": 0.0,
+   "Days \u00b7 ridge": 0.0,
+   "Days \u00b7 LightGBM": 0.0,
+   "Days \u00b7 Cox (survival)": 0.0
+  }
+ ],
+ "jev_scores": [
+  {
+   "model": "Late \u00b7 logistic",
+   "C-index (keyword)": 0.5747046449,
+   "C-index (JEV)": 0.5811349406,
+   "AUC (keyword)": 0.6149132308,
+   "AUC (JEV)": 0.6234525288,
+   "C-index change": 0.0064302957
+  },
+  {
+   "model": "Late \u00b7 LightGBM",
+   "C-index (keyword)": 0.582903405,
+   "C-index (JEV)": 0.5877224325,
+   "AUC (keyword)": 0.6283203336,
+   "AUC (JEV)": 0.6344620493,
+   "C-index change": 0.0048190275
+  },
+  {
+   "model": "Days \u00b7 ridge",
+   "C-index (keyword)": 0.5612865445,
+   "C-index (JEV)": 0.5684814315,
+   "AUC (keyword)": null,
+   "AUC (JEV)": null,
+   "C-index change": 0.007194887
+  },
+  {
+   "model": "Days \u00b7 LightGBM",
+   "C-index (keyword)": 0.5579932614,
+   "C-index (JEV)": 0.567052385,
+   "AUC (keyword)": null,
+   "AUC (JEV)": null,
+   "C-index change": 0.0090591237
+  },
+  {
+   "model": "Days \u00b7 Cox (survival)",
+   "C-index (keyword)": 0.5700465492,
+   "C-index (JEV)": 0.5735696924,
+   "AUC (keyword)": null,
+   "AUC (JEV)": null,
+   "C-index change": 0.0035231431
+  }
+ ],
+ "days_accuracy": [
+  {
+   "model": "Borough median (baseline)",
+   "average error (days)": 36.5603938287,
+   "median error (days)": 20.0,
+   "within 14 days": 0.3859114901,
+   "within 28 days": 0.6203816484,
+   "rank correlation": 0.1564053866
+  },
+  {
+   "model": "Days \u00b7 ridge",
+   "average error (days)": 39.6238251861,
+   "median error (days)": 26.1600461271,
+   "within 14 days": 0.2799431587,
+   "within 28 days": 0.5272025985,
+   "rank correlation": 0.1834086572
+  },
+  {
+   "model": "Days \u00b7 LightGBM",
+   "average error (days)": 41.3878622653,
+   "median error (days)": 28.4738476982,
+   "within 14 days": 0.2639058059,
+   "within 28 days": 0.4935038571,
+   "rank correlation": 0.1889631142
+  },
+  {
+   "model": "Days \u00b7 LightGBM P50",
+   "average error (days)": 37.866723584,
+   "median error (days)": 23.5232818108,
+   "within 14 days": 0.3239951279,
+   "within 28 days": 0.5678034917,
+   "rank correlation": 0.1848638827
+  }
+ ],
+ "days_calibration": [
+  {
+   "group": 1,
+   "applications": 493,
+   "predicted_median": 51.7361101605,
+   "actual_median": 53.0,
+   "actual_p25": 34.0,
+   "actual_p75": 70.0
+  },
+  {
+   "group": 2,
+   "applications": 493,
+   "predicted_median": 56.7403885657,
+   "actual_median": 55.0,
+   "actual_p25": 46.0,
+   "actual_p75": 71.0
+  },
+  {
+   "group": 3,
+   "applications": 492,
+   "predicted_median": 59.7352834996,
+   "actual_median": 55.0,
+   "actual_p25": 43.0,
+   "actual_p75": 68.0
+  },
+  {
+   "group": 4,
+   "applications": 493,
+   "predicted_median": 63.0110593255,
+   "actual_median": 56.0,
+   "actual_p25": 46.0,
+   "actual_p75": 78.0
+  },
+  {
+   "group": 5,
+   "applications": 492,
+   "predicted_median": 66.3924155051,
+   "actual_median": 56.0,
+   "actual_p25": 43.0,
+   "actual_p75": 76.0
+  },
+  {
+   "group": 6,
+   "applications": 493,
+   "predicted_median": 70.2384288616,
+   "actual_median": 56.0,
+   "actual_p25": 43.0,
+   "actual_p75": 80.0
+  },
+  {
+   "group": 7,
+   "applications": 492,
+   "predicted_median": 74.7675296562,
+   "actual_median": 56.0,
+   "actual_p25": 45.0,
+   "actual_p75": 83.25
+  },
+  {
+   "group": 8,
+   "applications": 493,
+   "predicted_median": 80.5433423776,
+   "actual_median": 56.0,
+   "actual_p25": 47.0,
+   "actual_p75": 92.0
+  },
+  {
+   "group": 9,
+   "applications": 492,
+   "predicted_median": 89.0839425432,
+   "actual_median": 65.5,
+   "actual_p25": 51.0,
+   "actual_p75": 104.25
+  },
+  {
+   "group": 10,
+   "applications": 493,
+   "predicted_median": 105.9546445835,
+   "actual_median": 73.0,
+   "actual_p25": 54.0,
+   "actual_p75": 125.0
+  }
+ ],
+ "description_value": [
+  {
+   "features": "No description features",
+   "late_logistic_auc": 0.5925409053,
+   "late_lightgbm_auc": 0.5963874435,
+   "late_lightgbm_sd": 0.0012197895,
+   "days_lightgbm_c": 0.538780387,
+   "days_lightgbm_sd": 0.0013084588,
+   "days_lightgbm_mae": 40.9808233393,
+   "days_ridge_c": 0.5440999361,
+   "days_ridge_mae": 39.2801279673,
+   "days_cox_c": 0.5605315734
+  },
+  {
+   "features": "Keyword description features",
+   "late_logistic_auc": 0.6149132308,
+   "late_lightgbm_auc": 0.626648073,
+   "late_lightgbm_sd": 0.0020551254,
+   "days_lightgbm_c": 0.559469298,
+   "days_lightgbm_sd": 0.0009173614,
+   "days_lightgbm_mae": 40.9974800113,
+   "days_ridge_c": 0.5612865445,
+   "days_ridge_mae": 39.6238251861,
+   "days_cox_c": 0.5700465492
+  },
+  {
+   "features": "Jev description features",
+   "late_logistic_auc": 0.6234525288,
+   "late_lightgbm_auc": 0.63574495,
+   "late_lightgbm_sd": 0.0013227535,
+   "days_lightgbm_c": 0.5649098435,
+   "days_lightgbm_sd": 0.0013914865,
+   "days_lightgbm_mae": 40.5981863579,
+   "days_ridge_c": 0.5684814315,
+   "days_ridge_mae": 39.3482305037,
+   "days_cox_c": 0.5735696924
+  }
+ ],
+ "external": {
+  "house_prices": [
+   {
+    "features": "Original features",
+    "Late AUC": 0.6244765774,
+    "Days C-index": 0.558219551
+   },
+   {
+    "features": "+ house prices",
+    "Late AUC": 0.614226947,
+    "Days C-index": 0.5467056557
+   }
+  ],
+  "constraints": [
+   {
+    "features": "Original features",
+    "Late AUC": 0.626648073,
+    "\u00b1 (5 seeds)": 0.0020551254,
+    "Days C-index": 0.559469298,
+    "\u00b1 ": 0.0009173614
+   },
+   {
+    "features": "+ 3 reliable layers",
+    "Late AUC": 0.6298261139,
+    "\u00b1 (5 seeds)": 0.0028959382,
+    "Days C-index": 0.5554005208,
+    "\u00b1 ": 0.0024218538
+   },
+   {
+    "features": "+ all 5 layers",
+    "Late AUC": 0.6300867434,
+    "\u00b1 (5 seeds)": 0.0005619347,
+    "Days C-index": 0.5570776957,
+    "\u00b1 ": 0.0018678516
+   }
+  ],
+  "constraints_within_borough": [
+   {
+    "constraint": "In a conservation area",
+    "late, with (%)": 55.4696559722,
+    "late, without (%)": 56.4142314549,
+    "difference within borough (points)": -0.4406783131,
+    "boroughs compared": 15
+   },
+   {
+    "constraint": "Listed building within 100 m",
+    "late, with (%)": 58.5669781931,
+    "late, without (%)": 55.5741406707,
+    "difference within borough (points)": 1.6737191266,
+    "boroughs compared": 16
+   },
+   {
+    "constraint": "Brownfield site within 50 m",
+    "late, with (%)": 58.886509636,
+    "late, without (%)": 55.2769162605,
+    "difference within borough (points)": 2.3599122119,
+    "boroughs compared": 15
+   }
+  ]
+ }
+}

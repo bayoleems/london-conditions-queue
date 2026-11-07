@@ -1,0 +1,504 @@
+{
+  "source": "foundations_london_housing_2015_2025_20261005T192558Z.parquet",
+  "statutory_days": 56,
+  "overall": {
+    "n": 16447,
+    "median_days": 60.0,
+    "p75_days": 106.0,
+    "pct_over_8wk": 55.2,
+    "pct_not_approved": 12.6,
+    "n_all_discharge": 17079,
+    "n_matched_parent": 5664,
+    "n_with_parent_date": 10893,
+    "outcomes": {
+      "approved": 13625,
+      "pending": 854,
+      "refused": 1800,
+      "withdrawn": 632,
+      "partial": 167,
+      "other": 1
+    }
+  },
+  "by_year": {
+    "2022": {
+      "n": 3659,
+      "median_days": 65.0,
+      "p75_days": 125.0,
+      "pct_over_8wk": 58.5,
+      "pct_not_approved": 14.0
+    },
+    "2024": {
+      "n": 3013,
+      "median_days": 56.0,
+      "p75_days": 83.0,
+      "pct_over_8wk": 47.8,
+      "pct_not_approved": 13.1
+    },
+    "2021": {
+      "n": 3795,
+      "median_days": 72.0,
+      "p75_days": 141.0,
+      "pct_over_8wk": 63.5,
+      "pct_not_approved": 11.4
+    },
+    "2023": {
+      "n": 3310,
+      "median_days": 57.0,
+      "p75_days": 94.0,
+      "pct_over_8wk": 51.0,
+      "pct_not_approved": 13.9
+    },
+    "2025": {
+      "n": 2670,
+      "median_days": 56.0,
+      "p75_days": 83.0,
+      "pct_over_8wk": 52.3,
+      "pct_not_approved": 9.8
+    }
+  },
+  "by_band": {
+    "Strategic (150+)": {
+      "n": 1817,
+      "median_days": 69.0,
+      "p75_days": 140.0,
+      "pct_over_8wk": 61.9,
+      "pct_not_approved": 2.3
+    },
+    "Unknown": {
+      "n": 8656,
+      "median_days": 58.0,
+      "p75_days": 96.0,
+      "pct_over_8wk": 53.4,
+      "pct_not_approved": 13.7
+    },
+    "Minor (1-9 homes)": {
+      "n": 2323,
+      "median_days": 59.0,
+      "p75_days": 98.5,
+      "pct_over_8wk": 52.3,
+      "pct_not_approved": 19.5
+    },
+    "Major (10-149)": {
+      "n": 3651,
+      "median_days": 65.0,
+      "p75_days": 129.0,
+      "pct_over_8wk": 58.1,
+      "pct_not_approved": 10.6
+    }
+  },
+  "by_topic": {
+    "Landscaping & trees": {
+      "n": 10036,
+      "median_days": 62.0,
+      "p75_days": 113.0,
+      "pct_over_8wk": 56.5,
+      "pct_not_approved": 12.3
+    },
+    "Waste, cycle & parking": {
+      "n": 12594,
+      "median_days": 61.0,
+      "p75_days": 108.0,
+      "pct_over_8wk": 55.5,
+      "pct_not_approved": 13.5
+    },
+    "Highways & travel": {
+      "n": 1276,
+      "median_days": 70.0,
+      "p75_days": 126.0,
+      "pct_over_8wk": 60.6,
+      "pct_not_approved": 5.4
+    },
+    "Boundary & lighting": {
+      "n": 1637,
+      "median_days": 67.0,
+      "p75_days": 122.0,
+      "pct_over_8wk": 58.6,
+      "pct_not_approved": 14.4
+    },
+    "Energy & carbon": {
+      "n": 2869,
+      "median_days": 60.0,
+      "p75_days": 107.0,
+      "pct_over_8wk": 55.2,
+      "pct_not_approved": 10.1
+    },
+    "Piling & structure": {
+      "n": 3272,
+      "median_days": 63.0,
+      "p75_days": 116.0,
+      "pct_over_8wk": 57.7,
+      "pct_not_approved": 7.5
+    },
+    "Contamination & ground": {
+      "n": 1197,
+      "median_days": 58.0,
+      "p75_days": 110.0,
+      "pct_over_8wk": 52.6,
+      "pct_not_approved": 14.8
+    },
+    "Materials & design detail": {
+      "n": 3331,
+      "median_days": 62.0,
+      "p75_days": 105.0,
+      "pct_over_8wk": 56.3,
+      "pct_not_approved": 16.5
+    },
+    "Drainage & flood": {
+      "n": 1597,
+      "median_days": 70.0,
+      "p75_days": 127.0,
+      "pct_over_8wk": 62.6,
+      "pct_not_approved": 21.4
+    },
+    "Ecology & biodiversity": {
+      "n": 937,
+      "median_days": 65.0,
+      "p75_days": 113.0,
+      "pct_over_8wk": 61.9,
+      "pct_not_approved": 15.7
+    },
+    "Construction logistics / management": {
+      "n": 1678,
+      "median_days": 69.0,
+      "p75_days": 117.0,
+      "pct_over_8wk": 63.6,
+      "pct_not_approved": 19.4
+    },
+    "Archaeology & heritage": {
+      "n": 331,
+      "median_days": 60.0,
+      "p75_days": 99.0,
+      "pct_over_8wk": 55.9,
+      "pct_not_approved": 5.5
+    },
+    "Noise, vibration & air": {
+      "n": 1499,
+      "median_days": 61.0,
+      "p75_days": 109.0,
+      "pct_over_8wk": 54.6,
+      "pct_not_approved": 7.6
+    },
+    "Accessibility": {
+      "n": 364,
+      "median_days": 62.0,
+      "p75_days": 126.0,
+      "pct_over_8wk": 56.3,
+      "pct_not_approved": 7.3
+    },
+    "Fire safety": {
+      "n": 298,
+      "median_days": 70.0,
+      "p75_days": 110.0,
+      "pct_over_8wk": 57.4,
+      "pct_not_approved": 20.4
+    }
+  },
+  "by_topic_single": {
+    "Waste, cycle & parking": {
+      "n": 956,
+      "median_days": 56.0,
+      "p75_days": 80.0,
+      "pct_over_8wk": 47.4,
+      "pct_not_approved": 18.1
+    },
+    "Materials & design detail": {
+      "n": 284,
+      "median_days": 56.0,
+      "p75_days": 90.0,
+      "pct_over_8wk": 46.5,
+      "pct_not_approved": 8.6
+    },
+    "Construction logistics / management": {
+      "n": 180,
+      "median_days": 61.0,
+      "p75_days": 93.0,
+      "pct_over_8wk": 55.6,
+      "pct_not_approved": 13.1
+    },
+    "Contamination & ground": {
+      "n": 110,
+      "median_days": 56.0,
+      "p75_days": 79.0,
+      "pct_over_8wk": 43.6,
+      "pct_not_approved": 10.6
+    },
+    "Landscaping & trees": {
+      "n": 330,
+      "median_days": 61.0,
+      "p75_days": 107.0,
+      "pct_over_8wk": 57.0,
+      "pct_not_approved": 8.0
+    },
+    "Piling & structure": {
+      "n": 137,
+      "median_days": 80.0,
+      "p75_days": 153.5,
+      "pct_over_8wk": 66.4,
+      "pct_not_approved": 7.0
+    },
+    "Noise, vibration & air": {
+      "n": 188,
+      "median_days": 56.0,
+      "p75_days": 90.0,
+      "pct_over_8wk": 47.3,
+      "pct_not_approved": 7.7
+    },
+    "Energy & carbon": {
+      "n": 171,
+      "median_days": 57.5,
+      "p75_days": 106.0,
+      "pct_over_8wk": 52.0,
+      "pct_not_approved": 11.6
+    }
+  },
+  "by_ncond": {
+    "1": {
+      "n": 13573,
+      "median_days": 58.0,
+      "p75_days": 102.0,
+      "pct_over_8wk": 53.0,
+      "pct_not_approved": 10.9
+    },
+    "2-3": {
+      "n": 1990,
+      "median_days": 67.0,
+      "p75_days": 114.0,
+      "pct_over_8wk": 61.7,
+      "pct_not_approved": 18.9
+    },
+    "4-6": {
+      "n": 723,
+      "median_days": 79.0,
+      "p75_days": 138.0,
+      "pct_over_8wk": 71.2,
+      "pct_not_approved": 25.0
+    },
+    "7+": {
+      "n": 161,
+      "median_days": 104.0,
+      "p75_days": 176.0,
+      "pct_over_8wk": 85.1,
+      "pct_not_approved": 28.5
+    }
+  },
+  "by_borough": {
+    "Bexley": {
+      "n": 561,
+      "median_days": 71.0,
+      "p75_days": 117.0,
+      "pct_over_8wk": 70.9,
+      "pct_not_approved": 16.7
+    },
+    "Brent": {
+      "n": 726,
+      "median_days": 58.0,
+      "p75_days": 94.0,
+      "pct_over_8wk": 52.8,
+      "pct_not_approved": 6.5
+    },
+    "Camden": {
+      "n": 630,
+      "median_days": 70.0,
+      "p75_days": 136.0,
+      "pct_over_8wk": 59.7,
+      "pct_not_approved": 0.5
+    },
+    "Croydon": {
+      "n": 2061,
+      "median_days": 57.0,
+      "p75_days": 98.0,
+      "pct_over_8wk": 51.0,
+      "pct_not_approved": 37.3
+    },
+    "Ealing": {
+      "n": 1776,
+      "median_days": 57.5,
+      "p75_days": 106.0,
+      "pct_over_8wk": 51.8,
+      "pct_not_approved": 5.7
+    },
+    "Enfield": {
+      "n": 839,
+      "median_days": 55.0,
+      "p75_days": 67.0,
+      "pct_over_8wk": 40.5,
+      "pct_not_approved": 23.0
+    },
+    "Hillingdon": {
+      "n": 621,
+      "median_days": 62.0,
+      "p75_days": 106.0,
+      "pct_over_8wk": 55.2,
+      "pct_not_approved": 11.5
+    },
+    "Hounslow": {
+      "n": 1392,
+      "median_days": 64.0,
+      "p75_days": 113.8,
+      "pct_over_8wk": 56.8,
+      "pct_not_approved": 9.6
+    },
+    "Kensington": {
+      "n": 397,
+      "median_days": 56.0,
+      "p75_days": 78.0,
+      "pct_over_8wk": 44.3,
+      "pct_not_approved": 9.5
+    },
+    "Kingston": {
+      "n": 791,
+      "median_days": 60.0,
+      "p75_days": 96.0,
+      "pct_over_8wk": 57.6,
+      "pct_not_approved": 22.5
+    },
+    "Lambeth": {
+      "n": 1526,
+      "median_days": 61.0,
+      "p75_days": 93.0,
+      "pct_over_8wk": 54.9,
+      "pct_not_approved": 12.3
+    },
+    "Lewisham": {
+      "n": 331,
+      "median_days": 56.0,
+      "p75_days": 103.0,
+      "pct_over_8wk": 51.4,
+      "pct_not_approved": 20.3
+    },
+    "Merton": {
+      "n": 911,
+      "median_days": 72.5,
+      "p75_days": 132.2,
+      "pct_over_8wk": 67.2,
+      "pct_not_approved": 4.7
+    },
+    "Southwark": {
+      "n": 1547,
+      "median_days": 61.0,
+      "p75_days": 106.0,
+      "pct_over_8wk": 61.0,
+      "pct_not_approved": 3.4
+    },
+    "Wandsworth": {
+      "n": 1332,
+      "median_days": 68.0,
+      "p75_days": 141.0,
+      "pct_over_8wk": 59.4,
+      "pct_not_approved": 0.6
+    }
+  },
+  "boroughs_excluded_thin": {
+    "Barking and Dagenham": 3,
+    "Barnet": 1,
+    "Bromley": 7,
+    "City": 5,
+    "Greenwich": 32,
+    "Hackney": 84,
+    "Hammersmith and Fulham": 18,
+    "Haringey": 256,
+    "Harrow": 290,
+    "Havering": 66,
+    "Islington": 80,
+    "London Legacy": 1,
+    "Newham": 4,
+    "Old Oak Park Royal": 146,
+    "Richmond": 3,
+    "Westminster": 10
+  },
+  "decided_only_pct_over_8wk": 53.8,
+  "pct_decided_in_final_week": 22.2,
+  "pct_over_26wk": 11.3,
+  "weekly_histogram": {
+    "note": "week k = days 7k-6..7k; 27 = over 26 weeks",
+    "bins": [
+      13,
+      165,
+      192,
+      355,
+      494,
+      630,
+      762,
+      1083,
+      3431,
+      1066,
+      853,
+      657,
+      581,
+      513,
+      403,
+      350,
+      318,
+      248,
+      231,
+      208,
+      202,
+      227,
+      170,
+      158,
+      132,
+      129,
+      120,
+      1739
+    ]
+  },
+  "lag_permission_to_submission": {
+    "n": 10815,
+    "median_days": 411,
+    "p25": 149.0,
+    "p75": 874.0
+  },
+  "schemes_granted_2021_23": {
+    "Strategic (150+)": {
+      "n_schemes": 28,
+      "median_discharge_apps": 2.0,
+      "mean_discharge_apps": 9.82,
+      "pct_with_refusal": 10.7,
+      "median_days_to_first_submission": 208.5,
+      "median_days_grant_to_last_decision": 633,
+      "homes": 21476
+    },
+    "Minor (1-9 homes)": {
+      "n_schemes": 244,
+      "median_discharge_apps": 2.0,
+      "mean_discharge_apps": 3.38,
+      "pct_with_refusal": 26.2,
+      "median_days_to_first_submission": 153.0,
+      "median_days_grant_to_last_decision": 490,
+      "homes": 1209
+    },
+    "Unknown": {
+      "n_schemes": 1091,
+      "median_discharge_apps": 1,
+      "mean_discharge_apps": 2.38,
+      "pct_with_refusal": 22.0,
+      "median_days_to_first_submission": 188,
+      "median_days_grant_to_last_decision": 418,
+      "homes": 0
+    },
+    "Major (10-149)": {
+      "n_schemes": 97,
+      "median_discharge_apps": 3,
+      "mean_discharge_apps": 6.77,
+      "pct_with_refusal": 29.9,
+      "median_days_to_first_submission": 216,
+      "median_days_grant_to_last_decision": 675.5,
+      "homes": 4697
+    },
+    "All": {
+      "n_schemes": 1460,
+      "median_discharge_apps": 1.0,
+      "mean_discharge_apps": 2.98,
+      "pct_with_refusal": 23.0,
+      "median_days_to_first_submission": 181.0,
+      "median_days_grant_to_last_decision": 448,
+      "homes": 27382
+    }
+  },
+  "refusal_rounds": {
+    "n": 1967,
+    "homes_in_schemes_affected": null,
+    "n_resubmission_pairs": 378,
+    "median_extra_days": 68.5
+  }
+}

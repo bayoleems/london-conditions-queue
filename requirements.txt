@@ -1,0 +1,15 @@
+duckdb>=1.0
+pandas>=2.0
+pyarrow>=14
+numpy>=1.24
+scipy>=1.10
+scikit-learn>=1.4
+lightgbm>=4.0
+statsmodels>=0.14
+matplotlib>=3.8
+geopandas>=0.14
+shapely>=2.0
+requests>=2.31
+nbformat>=5.9
+nbconvert>=7.0
+jupyter

@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>London's Conditions Queue</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a single reading column (~68ch) with full-width chart panels; site-notice condensed type for headings, plain sans for prose, mono for references and numbers. */
+:root {
+  --paper: #f6f7f5;
+  --panel: #ffffff;
+  --ink: #18202b;
+  --ink-2: #4a5361;
+  --ink-3: #737b87;
+  --rule: #dde0e3;
+  --grid: #e9ebed;
+  --accent: #1c5cab;
+  --notice: #f3d34a;
+  --notice-ink: #18202b;
+  --ontime: #2a78d6;
+  --late: #eb6834;
+  --bar-neutral: #9aa3ae;
+  --tip-bg: #18202b;
+  --tip-fg: #f6f7f5;
+  --f-display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "IBM Plex Sans", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #14181e; --panel: #1b2028; --ink: #ecedeb; --ink-2: #b9bec6; --ink-3: #8b929c;
+    --rule: #2e353f; --grid: #262c35; --accent: #6da7ec; --notice: #e2c23c; --notice-ink: #14181e;
+    --ontime: #3987e5; --late: #d95926; --bar-neutral: #6b7480; --tip-bg: #ecedeb; --tip-fg: #14181e;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #14181e; --panel: #1b2028; --ink: #ecedeb; --ink-2: #b9bec6; --ink-3: #8b929c;
+  --rule: #2e353f; --grid: #262c35; --accent: #6da7ec; --notice: #e2c23c; --notice-ink: #14181e;
+  --ontime: #3987e5; --late: #d95926; --bar-neutral: #6b7480; --tip-bg: #ecedeb; --tip-fg: #14181e;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--paper); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 920px; margin: 0 auto; display: grid; gap: 56px; }
+.prose { max-width: 68ch; }
+h1, h2, h3 { font-family: var(--f-display); font-weight: 600; line-height: 1.1; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2.3rem, 6vw, 3.6rem); letter-spacing: -0.01em; }
+h2 { font-size: clamp(1.6rem, 3.6vw, 2.1rem); }
+h3 { font-size: 1.25rem; font-weight: 600; }
+p { margin: 0; }
+.stack { display: grid; gap: 16px; }
+.eyebrow { font-family: var(--f-mono); font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+.mono { font-family: var(--f-mono); }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--ink-2); }
+.small { font-size: 0.88rem; }
+
+/* Site-notice header: the yellow laminated notice is how Londoners meet the planning system */
+header.notice { padding-block: 40px 0; display: grid; gap: 20px; }
+.notice-tag { display: inline-flex; align-items: center; gap: 10px; align-self: start; justify-self: start;
+  background: var(--notice); color: var(--notice-ink); font-family: var(--f-display); font-weight: 700;
+  font-size: 0.95rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 12px; border-radius: 2px; }
+.lede { font-size: 1.15rem; color: var(--ink-2); max-width: 62ch; }
+.ref { font-family: var(--f-mono); font-size: 0.82rem; color: var(--ink-3); }
+
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--rule); }
+.stat { padding: 16px 16px 18px 0; display: grid; gap: 4px; align-content: start; }
+.stat + .stat { padding-left: 16px; border-left: 1px solid var(--rule); }
+.stat b { font-family: var(--f-display); font-size: 2.6rem; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 0.88rem; color: var(--ink-2); line-height: 1.4; }
+@media (max-width: 720px) {
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stat:nth-child(3) { padding-left: 0; border-left: 0; }
+  .stat:nth-child(n+3) { border-top: 1px solid var(--rule); }
+}
+
+.panel { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 20px; display: grid; gap: 14px; min-width: 0; }
+.panel-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 20px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 0.85rem; color: var(--ink-2); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.chart { width: 100%; overflow-x: auto; }
+.panel { grid-template-columns: minmax(0, 1fr); }
+.chart svg { display: block; width: 100%; height: auto; min-width: 0; }
+.chart svg text { font-family: var(--f-mono); font-size: 12.5px; fill: var(--ink-3); }
+.chart svg .lbl-strong { fill: var(--ink); font-weight: 500; }
+.source { font-size: 0.8rem; color: var(--ink-3); }
+
+/* Horizontal bar rows (HTML) */
+.rows { display: grid; gap: 6px; }
+.row { display: grid; grid-template-columns: minmax(120px, 15rem) minmax(0, 1fr) 4.5rem; gap: 12px; align-items: center; font-size: 0.92rem; }
+.row .name { color: var(--ink); line-height: 1.3; }
+.row .track { position: relative; height: 18px; border-left: 1px solid var(--ink-3); }
+.row .bar { position: absolute; left: 0; top: 2px; bottom: 2px; border-radius: 0 4px 4px 0; background: var(--late); }
+.row .bar.neutral { background: var(--bar-neutral); }
+.row .val { text-align: right; font-family: var(--f-mono); font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+.row .deadline { position: absolute; top: -3px; bottom: -3px; border-left: 1px dashed var(--ink-3); }
+.row-head { font-size: 0.78rem; color: var(--ink-3); font-family: var(--f-mono); text-transform: uppercase; letter-spacing: 0.05em; }
+@media (max-width: 560px) { .row { grid-template-columns: minmax(0, 1fr) 4rem; } .row .track { grid-column: 1 / -1; grid-row: 2; } }
+
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+.table-wrap { overflow-x: auto; }
+th, td { text-align: right; padding: 8px 10px; border-bottom: 1px solid var(--rule); font-variant-numeric: tabular-nums; white-space: nowrap; }
+th { font-family: var(--f-mono); font-weight: 500; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-3); vertical-align: bottom; white-space: normal; }
+th:first-child, td:first-child { text-align: left; }
+td.barcell { width: 34%; min-width: 140px; }
+.mini { position: relative; height: 12px; }
+.mini span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 0 3px 3px 0; background: var(--late); }
+.mini .dl { position: absolute; top: -4px; bottom: -4px; border-left: 1px dashed var(--ink-3); }
+
+.levers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 28px; }
+.lever { display: grid; gap: 6px; align-content: start; border-top: 2px solid var(--ink); padding-top: 12px; }
+.lever p { color: var(--ink-2); font-size: 0.95rem; }
+@media (max-width: 720px) { .levers { grid-template-columns: minmax(0, 1fr); } }
+
+details { border-top: 1px solid var(--rule); padding-top: 12px; }
+summary { cursor: pointer; font-family: var(--f-display); font-size: 1.25rem; font-weight: 600; }
+summary:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+ul.caveats { margin: 12px 0 0; padding-left: 1.1rem; display: grid; gap: 8px; color: var(--ink-2); font-size: 0.92rem; max-width: 72ch; }
+a { color: var(--accent); }
+code { font-family: var(--f-mono); font-size: 0.88em; }
+
+#tip { position: fixed; pointer-events: none; z-index: 20; background: var(--tip-bg); color: var(--tip-fg); font-size: 0.82rem; line-height: 1.4;
+  padding: 7px 10px; border-radius: 4px; max-width: 260px; font-family: var(--f-body); }
+#tip b { font-weight: 600; }
+[data-tip] { cursor: default; }
+.row:hover .bar, tr:hover .mini span { filter: brightness(1.08); }
+tr:hover td { background: color-mix(in srgb, var(--paper) 70%, transparent); }
+</style>
+<style>.cq-back { display: inline-block; margin-top: 16px; font-family: var(--f-mono); font-size: 0.82rem; color: var(--ink-3); }</style>
+</head>
+<body>
+<a class="cq-back" href="./">← Conditions Queue Models dashboard</a>
+<div id="tip" hidden></div>
+<div class="wrap">
+
+<header class="notice">
+  <span class="notice-tag">Approval of details</span>
+  <h1>Permission granted is not permission to build. More than half of London's condition sign-offs miss the 8-week deadline.</h1>
+  <p class="lede">Most planning permissions come with conditions: drainage, construction logistics, materials, cycle stores. Many must be signed off before work can start. We analysed <span class="num" data-k="n_all">17,079</span> applications to discharge conditions on London housing schemes, submitted 2021&ndash;2025.</p>
+  <p class="ref">House London #0 &middot; Insight brief &middot; Source: PlanIt-derived London planning applications extract (fetched Aug 2026)</p>
+</header>
+
+<section class="stats" aria-label="Headline figures">
+  <div class="stat"><b data-k="pct_late">54%</b><span>of decided discharge applications took longer than the 8-week statutory period</span></div>
+  <div class="stat"><b data-k="median">60</b><span>days: median time to a decision. One in four took over <span data-k="p75">106</span> days</span></div>
+  <div class="stat"><b data-k="pct26">11%</b><span>took more than six months (26 weeks)</span></div>
+  <div class="stat"><b>16</b><span>recorded deemed discharges, all in 3 boroughs, against roughly <span data-k="n_late">8,300</span> late decisions</span></div>
+</section>
+
+<section class="stack">
+  <div class="prose stack">
+    <p class="eyebrow">1 &middot; The clock</p>
+    <h2>Councils work to the deadline, and a long tail sits behind it</h2>
+    <p>Councils have eight weeks to decide an application to approve details required by a condition (Development Management Procedure Order 2015, article 27). <span data-k="final_week">22%</span> of all decisions land in the final week before that deadline. After it passes, nothing forces a decision, and the queue thins out slowly over months.</p>
+  </div>
+  <figure class="panel" style="margin:0">
+    <div class="panel-head">
+      <h3>Discharge applications by weeks to decision</h3>
+      <div class="legend"><span><i style="background:var(--ontime)"></i>Within 8 weeks</span><span><i style="background:var(--late)"></i>After 8 weeks</span></div>
+    </div>
+    <div class="chart" id="hist"></div>
+    <figcaption class="source">Residential discharge-of-condition applications submitted 2021&ndash;2025 and decided (approved, refused or split). Withdrawn and undecided applications excluded. The final bar groups everything over 26 weeks.</figcaption>
+  </figure>
+</section>
+
+<section class="stack">
+  <div class="prose stack">
+    <p class="eyebrow">2 &middot; Getting better, slowly</p>
+    <h2>The late share has fallen since 2021, but it has stalled at about half</h2>
+    <p>Applications submitted in 2021 came out of a pandemic backlog. Since 2024 the share decided late has sat around half.</p>
+  </div>
+  <figure class="panel" style="margin:0">
+    <h3>Share of applications decided after 8 weeks, by year submitted</h3>
+    <div class="rows" id="years"></div>
+    <figcaption class="source">Undecided applications more than 8 weeks old at the end of the extract count as late. Dashed line marks 50%.</figcaption>
+  </figure>
+</section>
+
+<section class="stack">
+  <div class="prose stack">
+    <p class="eyebrow">3 &middot; Bundling</p>
+    <h2>Applications that bundle many conditions are the slowest and most often refused</h2>
+    <p>One application can ask for several conditions to be signed off at once. With seven or more, <span data-k="c7_late">85%</span> are decided late, the median wait is <span data-k="c7_med">104</span> days, and <span data-k="c7_ref">29%</span> are refused or only partly approved. A single refused item sends the whole package back.</p>
+  </div>
+  <figure class="panel" style="margin:0">
+    <div class="panel-head"><h3>Share decided after 8 weeks, by number of conditions in the application</h3></div>
+    <div class="table-wrap">
+      <table id="ncond"><thead><tr><th>Conditions in one application</th><th>Applications</th><th>Median days</th><th>Refused or part-refused</th><th>Decided after 8 weeks</th></tr></thead><tbody></tbody></table>
+    </div>
+    <figcaption class="source">Condition count read from the application description (e.g. &ldquo;conditions 3, 5, 6 and 11&rdquo;). Larger schemes tend to bundle more, so scheme size explains part of this.</figcaption>
+  </figure>
+</section>
+
+<section class="stack">
+  <div class="prose stack">
+    <p class="eyebrow">4 &middot; What gets stuck</p>
+    <h2>Drainage and construction logistics are both slow and often refused</h2>
+    <p>Drainage plans and construction logistics plans are usually needed before work can start. Both run late more than 60% of the time, and about one in five is refused. Fire safety details are refused at a similar rate.</p>
+  </div>
+  <figure class="panel" style="margin:0">
+    <div class="panel-head">
+      <h3>Condition topics: share decided after 8 weeks</h3>
+      <div class="legend"><span>Sorted by share late &middot; value at right is share refused or part-refused</span></div>
+    </div>
+    <div class="rows" id="topics"></div>
+    <figcaption class="source">Topics identified by keyword in the description; an application can mention several. Topics with at least 200 applications shown.</figcaption>
+  </figure>
+</section>
+
+<section class="stack">
+  <div class="prose stack">
+    <p class="eyebrow">5 &middot; Over a scheme's life</p>
+    <h2>Major schemes come back for condition sign-offs about seven times on average</h2>
+    <p>We matched discharge applications to <span data-k="n_schemes">1,460</span> permissions granted 2021&ndash;2023, giving each at least two and a half years to come back. Developers take their own time too: the median first submission comes <span data-k="first_sub">181</span> days after permission. When a discharge is refused and resubmitted, the approval comes a median <span data-k="resub">69</span> days after the refusal (<span data-k="resub_n">378</span> matched pairs).</p>
+  </div>
+  <figure class="panel" style="margin:0">
+    <h3>Condition sign-offs per permission, by scheme size</h3>
+    <div class="table-wrap">
+      <table id="schemes"><thead><tr><th>Scheme size</th><th>Permissions</th><th>Homes</th><th>Discharge applications (mean)</th><th>With a refused discharge</th><th>Days from permission to first submission (median)</th><th>Days from permission to last decision (median)</th></tr></thead><tbody></tbody></table>
+    </div>
+    <figcaption class="source">Only permissions that appear in the extract and could be matched by reference number. Strategic schemes are a small sample. Scheme size read from descriptions; &ldquo;Unknown&rdquo; is mostly householder-scale and conversion work.</figcaption>
+  </figure>
+</section>
+
+<section class="stack">
+  <div class="prose stack">
+    <p class="eyebrow">6 &middot; Boroughs</p>
+    <h2>Practice varies more than speed</h2>
+    <p>The share decided late runs from about 40% in Enfield to 71% in Bexley. Refusal practice varies far more: Camden and Wandsworth almost never refuse a discharge, while Croydon refuses or part-refuses over a third. A refusal is fast for the council but costs the applicant another round.</p>
+  </div>
+  <figure class="panel" style="margin:0">
+    <h3>Boroughs with at least 300 discharge applications in the extract</h3>
+    <div class="table-wrap">
+      <table id="boroughs"><thead><tr><th>Borough</th><th>Applications</th><th>Median days</th><th>Refused or part-refused</th><th>Decided after 8 weeks</th></tr></thead><tbody></tbody></table>
+    </div>
+    <figcaption class="source">18 boroughs are too thinly covered in the extract to compare, including Barnet, Tower Hamlets, Westminster, Newham and Hackney.</figcaption>
+  </figure>
+</section>
+
+<section class="stack">
+  <div class="prose stack">
+    <p class="eyebrow">What could change</p>
+    <h2>Four levers the data points to</h2>
+  </div>
+  <div class="levers">
+    <div class="lever"><h3>Make deemed discharge real</h3><p>Since 2015, applicants can serve notice that many conditions are treated as approved once the deadline passes. The extract records only 16 deemed discharges against about 8,300 late decisions, 13 of them in Croydon. Only 3 of 28 boroughs record any, so the route is either almost unused or invisible in most council systems. Either way, nobody can tell how often applicants use it. Recording it consistently would be the first step.</p></div>
+    <div class="lever"><h3>Standard London conditions</h3><p>Construction logistics, drainage and cycle/refuse storage come up thousands of times. London-wide standard wording and templates would cut both refusals and back-and-forth.</p></div>
+    <div class="lever"><h3>Fewer pre-start conditions</h3><p>Applications bundling seven or more conditions are late 85% of the time. Settling drainage and logistics detail at the application stage for larger schemes would shorten the queue after permission.</p></div>
+    <div class="lever"><h3>Publish the clock</h3><p>Discharge decisions get far less scrutiny than the headline speed figures for planning applications. Boroughs already hold these dates, so a quarterly table would cost little.</p></div>
+  </div>
+</section>
+
+<details>
+  <summary>Method and caveats</summary>
+  <ul class="caveats">
+    <li><b>Data:</b> PlanIt-derived extract of London planning applications (<span class="mono">foundations_london_housing_2015_2025</span>, 243,926 rows, in practice 2021&ndash;2025). Fetched August 2026, so applications submitted up to December 2025 had at least seven months to be decided.</li>
+    <li><b>What counts as a discharge application:</b> descriptions mentioning approval or discharge of details under a condition, excluding variations (section 73), non-material amendments and reserved matters, and limited to those that mention homes. 17,079 applications; 16,447 submitted 2021&ndash;2025 and not withdrawn.</li>
+    <li><b>Late</b> means more than 56 days from the start date to the decision. This includes extensions of time agreed with the applicant, so late is not the same as unlawful. Counting decided applications only gives 53.8%; adding undecided applications over 8 weeks old gives 55.2%.</li>
+    <li><b>Extensions of time</b> have no field of their own in the extract. 76% of decided applications carry a council target decision date, and measuring those against their own target gives 52.5% late, against 53.0% at a fixed 8 weeks. Only 5.3% were late at 8 weeks but on time against a later target, most of them in Hillingdon. Agreed extensions therefore explain a few points of the late share at most. Target dates are not used consistently: Camden, Merton and Enfield often set targets shorter than 56 days, and nine boroughs, including Brent and Wandsworth, record none.</li>
+    <li><b>Coverage is uneven.</b> Some boroughs' discharge applications are mostly missing from the extract. Borough comparisons use only the 15 boroughs with at least 300 applications.</li>
+    <li><b>Topics, condition counts and scheme size</b> come from keyword and pattern matching on free-text descriptions. Scheme size is unknown for about half of applications.</li>
+    <li><b>Scheme matching:</b> 5,664 discharge applications (33%) were matched to their parent permission by reference number. Many parents were granted before 2021 and are outside the extract.</li>
+    <li><b>Deemed discharge</b> is counted from decision labels containing &ldquo;deemed&rdquo; together with &ldquo;discharge&rdquo; or &ldquo;AOD&rdquo;. Only Croydon (13), Southwark (2) and Islington (1) record any. Other boroughs may log a deemed discharge as an ordinary approval, so 16 is a floor, not a London total.</li>
+    <li><b>Reproduce:</b> <code>python -m conditions_queue.analysis</code> writes <code>outputs/summary.json</code>, <code>outputs/discharge_apps.csv</code> and <code>outputs/schemes.csv</code>. <code>conditions_queue.checks.check_deadline</code> and <code>check_extensions</code> re-derive the deadline, deemed discharge and extension figures independently.</li>
+  </ul>
+</details>
+
+</div>
+
+<script>
+const D = {"source": "foundations_london_housing_2015_2025_20261005T192558Z.parquet", "statutory_days": 56, "overall": {"n": 16447, "median_days": 60.0, "p75_days": 106.0, "pct_over_8wk": 55.2, "pct_not_approved": 12.6, "n_all_discharge": 17079, "n_matched_parent": 5664, "n_with_parent_date": 10893, "outcomes": {"approved": 13625, "pending": 854, "refused": 1800, "withdrawn": 632, "partial": 167, "other": 1}}, "by_year": {"2022": {"n": 3659, "median_days": 65.0, "p75_days": 125.0, "pct_over_8wk": 58.5, "pct_not_approved": 14.0}, "2024": {"n": 3013, "median_days": 56.0, "p75_days": 83.0, "pct_over_8wk": 47.8, "pct_not_approved": 13.1}, "2021": {"n": 3795, "median_days": 72.0, "p75_days": 141.0, "pct_over_8wk": 63.5, "pct_not_approved": 11.4}, "2023": {"n": 3310, "median_days": 57.0, "p75_days": 94.0, "pct_over_8wk": 51.0, "pct_not_approved": 13.9}, "2025": {"n": 2670, "median_days": 56.0, "p75_days": 83.0, "pct_over_8wk": 52.3, "pct_not_approved": 9.8}}, "by_band": {"Strategic (150+)": {"n": 1817, "median_days": 69.0, "p75_days": 140.0, "pct_over_8wk": 61.9, "pct_not_approved": 2.3}, "Unknown": {"n": 8656, "median_days": 58.0, "p75_days": 96.0, "pct_over_8wk": 53.4, "pct_not_approved": 13.7}, "Minor (1-9 homes)": {"n": 2323, "median_days": 59.0, "p75_days": 98.5, "pct_over_8wk": 52.3, "pct_not_approved": 19.5}, "Major (10-149)": {"n": 3651, "median_days": 65.0, "p75_days": 129.0, "pct_over_8wk": 58.1, "pct_not_approved": 10.6}}, "by_topic": {"Landscaping & trees": {"n": 10036, "median_days": 62.0, "p75_days": 113.0, "pct_over_8wk": 56.5, "pct_not_approved": 12.3}, "Waste, cycle & parking": {"n": 12594, "median_days": 61.0, "p75_days": 108.0, "pct_over_8wk": 55.5, "pct_not_approved": 13.5}, "Highways & travel": {"n": 1276, "median_days": 70.0, "p75_days": 126.0, "pct_over_8wk": 60.6, "pct_not_approved": 5.4}, "Boundary & lighting": {"n": 1637, "median_days": 67.0, "p75_days": 122.0, "pct_over_8wk": 58.6, "pct_not_approved": 14.4}, "Energy & carbon": {"n": 2869, "median_days": 60.0, "p75_days": 107.0, "pct_over_8wk": 55.2, "pct_not_approved": 10.1}, "Piling & structure": {"n": 3272, "median_days": 63.0, "p75_days": 116.0, "pct_over_8wk": 57.7, "pct_not_approved": 7.5}, "Contamination & ground": {"n": 1197, "median_days": 58.0, "p75_days": 110.0, "pct_over_8wk": 52.6, "pct_not_approved": 14.8}, "Materials & design detail": {"n": 3331, "median_days": 62.0, "p75_days": 105.0, "pct_over_8wk": 56.3, "pct_not_approved": 16.5}, "Drainage & flood": {"n": 1597, "median_days": 70.0, "p75_days": 127.0, "pct_over_8wk": 62.6, "pct_not_approved": 21.4}, "Ecology & biodiversity": {"n": 937, "median_days": 65.0, "p75_days": 113.0, "pct_over_8wk": 61.9, "pct_not_approved": 15.7}, "Construction logistics / management": {"n": 1678, "median_days": 69.0, "p75_days": 117.0, "pct_over_8wk": 63.6, "pct_not_approved": 19.4}, "Archaeology & heritage": {"n": 331, "median_days": 60.0, "p75_days": 99.0, "pct_over_8wk": 55.9, "pct_not_approved": 5.5}, "Noise, vibration & air": {"n": 1499, "median_days": 61.0, "p75_days": 109.0, "pct_over_8wk": 54.6, "pct_not_approved": 7.6}, "Accessibility": {"n": 364, "median_days": 62.0, "p75_days": 126.0, "pct_over_8wk": 56.3, "pct_not_approved": 7.3}, "Fire safety": {"n": 298, "median_days": 70.0, "p75_days": 110.0, "pct_over_8wk": 57.4, "pct_not_approved": 20.4}}, "by_topic_single": {"Waste, cycle & parking": {"n": 956, "median_days": 56.0, "p75_days": 80.0, "pct_over_8wk": 47.4, "pct_not_approved": 18.1}, "Materials & design detail": {"n": 284, "median_days": 56.0, "p75_days": 90.0, "pct_over_8wk": 46.5, "pct_not_approved": 8.6}, "Construction logistics / management": {"n": 180, "median_days": 61.0, "p75_days": 93.0, "pct_over_8wk": 55.6, "pct_not_approved": 13.1}, "Contamination & ground": {"n": 110, "median_days": 56.0, "p75_days": 79.0, "pct_over_8wk": 43.6, "pct_not_approved": 10.6}, "Landscaping & trees": {"n": 330, "median_days": 61.0, "p75_days": 107.0, "pct_over_8wk": 57.0, "pct_not_approved": 8.0}, "Piling & structure": {"n": 137, "median_days": 80.0, "p75_days": 153.5, "pct_over_8wk": 66.4, "pct_not_approved": 7.0}, "Noise, vibration & air": {"n": 188, "median_days": 56.0, "p75_days": 90.0, "pct_over_8wk": 47.3, "pct_not_approved": 7.7}, "Energy & carbon": {"n": 171, "median_days": 57.5, "p75_days": 106.0, "pct_over_8wk": 52.0, "pct_not_approved": 11.6}}, "by_ncond": {"1": {"n": 13573, "median_days": 58.0, "p75_days": 102.0, "pct_over_8wk": 53.0, "pct_not_approved": 10.9}, "2-3": {"n": 1990, "median_days": 67.0, "p75_days": 114.0, "pct_over_8wk": 61.7, "pct_not_approved": 18.9}, "4-6": {"n": 723, "median_days": 79.0, "p75_days": 138.0, "pct_over_8wk": 71.2, "pct_not_approved": 25.0}, "7+": {"n": 161, "median_days": 104.0, "p75_days": 176.0, "pct_over_8wk": 85.1, "pct_not_approved": 28.5}}, "by_borough": {"Bexley": {"n": 561, "median_days": 71.0, "p75_days": 117.0, "pct_over_8wk": 70.9, "pct_not_approved": 16.7}, "Brent": {"n": 726, "median_days": 58.0, "p75_days": 94.0, "pct_over_8wk": 52.8, "pct_not_approved": 6.5}, "Camden": {"n": 630, "median_days": 70.0, "p75_days": 136.0, "pct_over_8wk": 59.7, "pct_not_approved": 0.5}, "Croydon": {"n": 2061, "median_days": 57.0, "p75_days": 98.0, "pct_over_8wk": 51.0, "pct_not_approved": 37.3}, "Ealing": {"n": 1776, "median_days": 57.5, "p75_days": 106.0, "pct_over_8wk": 51.8, "pct_not_approved": 5.7}, "Enfield": {"n": 839, "median_days": 55.0, "p75_days": 67.0, "pct_over_8wk": 40.5, "pct_not_approved": 23.0}, "Hillingdon": {"n": 621, "median_days": 62.0, "p75_days": 106.0, "pct_over_8wk": 55.2, "pct_not_approved": 11.5}, "Hounslow": {"n": 1392, "median_days": 64.0, "p75_days": 113.8, "pct_over_8wk": 56.8, "pct_not_approved": 9.6}, "Kensington": {"n": 397, "median_days": 56.0, "p75_days": 78.0, "pct_over_8wk": 44.3, "pct_not_approved": 9.5}, "Kingston": {"n": 791, "median_days": 60.0, "p75_days": 96.0, "pct_over_8wk": 57.6, "pct_not_approved": 22.5}, "Lambeth": {"n": 1526, "median_days": 61.0, "p75_days": 93.0, "pct_over_8wk": 54.9, "pct_not_approved": 12.3}, "Lewisham": {"n": 331, "median_days": 56.0, "p75_days": 103.0, "pct_over_8wk": 51.4, "pct_not_approved": 20.3}, "Merton": {"n": 911, "median_days": 72.5, "p75_days": 132.2, "pct_over_8wk": 67.2, "pct_not_approved": 4.7}, "Southwark": {"n": 1547, "median_days": 61.0, "p75_days": 106.0, "pct_over_8wk": 61.0, "pct_not_approved": 3.4}, "Wandsworth": {"n": 1332, "median_days": 68.0, "p75_days": 141.0, "pct_over_8wk": 59.4, "pct_not_approved": 0.6}}, "boroughs_excluded_thin": {"Barking and Dagenham": 3, "Barnet": 1, "Bromley": 7, "City": 5, "Greenwich": 32, "Hackney": 84, "Hammersmith and Fulham": 18, "Haringey": 256, "Harrow": 290, "Havering": 66, "Islington": 80, "London Legacy": 1, "Newham": 4, "Old Oak Park Royal": 146, "Richmond": 3, "Westminster": 10}, "decided_only_pct_over_8wk": 53.8, "pct_decided_in_final_week": 22.2, "pct_over_26wk": 11.3, "weekly_histogram": {"note": "week k = days 7k-6..7k; 27 = over 26 weeks", "bins": [13, 165, 192, 355, 494, 630, 762, 1083, 3431, 1066, 853, 657, 581, 513, 403, 350, 318, 248, 231, 208, 202, 227, 170, 158, 132, 129, 120, 1739]}, "lag_permission_to_submission": {"n": 10815, "median_days": 411, "p25": 149.0, "p75": 874.0}, "schemes_granted_2021_23": {"Strategic (150+)": {"n_schemes": 28, "median_discharge_apps": 2.0, "mean_discharge_apps": 9.82, "pct_with_refusal": 10.7, "median_days_to_first_submission": 208.5, "median_days_grant_to_last_decision": 633, "homes": 21476}, "Minor (1-9 homes)": {"n_schemes": 244, "median_discharge_apps": 2.0, "mean_discharge_apps": 3.38, "pct_with_refusal": 26.2, "median_days_to_first_submission": 153.0, "median_days_grant_to_last_decision": 490, "homes": 1209}, "Unknown": {"n_schemes": 1091, "median_discharge_apps": 1, "mean_discharge_apps": 2.38, "pct_with_refusal": 22.0, "median_days_to_first_submission": 188, "median_days_grant_to_last_decision": 418, "homes": 0}, "Major (10-149)": {"n_schemes": 97, "median_discharge_apps": 3, "mean_discharge_apps": 6.77, "pct_with_refusal": 29.9, "median_days_to_first_submission": 216, "median_days_grant_to_last_decision": 675.5, "homes": 4697}, "All": {"n_schemes": 1460, "median_discharge_apps": 1.0, "mean_discharge_apps": 2.98, "pct_with_refusal": 23.0, "median_days_to_first_submission": 181.0, "median_days_grant_to_last_decision": 448, "homes": 27382}}, "refusal_rounds": {"n": 1967, "homes_in_schemes_affected": null, "n_resubmission_pairs": 378, "median_extra_days": 68.5}};
+const fmt = n => n == null ? "–" : Math.round(n).toLocaleString("en-GB");
+const pct = n => n == null ? "–" : (Math.round(n) + "%");
+
+// tooltip
+const tip = document.getElementById("tip");
+document.addEventListener("pointermove", e => {
+  const t = e.target.closest && e.target.closest("[data-tip]");
+  if (!t) { tip.hidden = true; return; }
+  tip.innerHTML = t.getAttribute("data-tip");
+  tip.hidden = false;
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = e.clientX + 14, y = e.clientY + 14;
+  if (x + w > innerWidth - 8) x = e.clientX - w - 14;
+  if (y + h > innerHeight - 8) y = e.clientY - h - 14;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+});
+document.addEventListener("pointerleave", () => tip.hidden = true);
+
+// headline numbers
+const O = D.overall;
+const set = (k, v) => document.querySelectorAll(`[data-k="${k}"]`).forEach(el => el.textContent = v);
+set("n_all", fmt(O.n_all_discharge));
+set("pct_late", pct(D.decided_only_pct_over_8wk));
+set("median", fmt(O.median_days));
+set("p75", fmt(O.p75_days));
+set("pct26", pct(D.pct_over_26wk));
+set("final_week", pct(D.pct_decided_in_final_week));
+const decidedN = D.weekly_histogram.bins.reduce((a, b) => a + b, 0);
+set("n_late", fmt(Math.round(decidedN * D.decided_only_pct_over_8wk / 100 / 100) * 100));
+const c7 = D.by_ncond["7+"];
+set("c7_late", pct(c7.pct_over_8wk)); set("c7_med", fmt(c7.median_days)); set("c7_ref", pct(c7.pct_not_approved));
+const S = D.schemes_granted_2021_23;
+set("n_schemes", fmt(S.All.n_schemes)); set("first_sub", fmt(S.All.median_days_to_first_submission));
+set("resub", fmt(D.refusal_rounds.median_extra_days)); set("resub_n", fmt(D.refusal_rounds.n_resubmission_pairs));
+
+// 1. histogram (SVG)
+(function () {
+  const raw = D.weekly_histogram.bins.slice();
+  const bins = [raw[0] + raw[1]].concat(raw.slice(2)); // week 1 .. 26, >26
+  const labels = bins.map((_, i) => i < 26 ? String(i + 1) : ">26");
+  const W = 720, H = 300, m = { l: 46, r: 12, t: 34, b: 40 };
+  const pw = W - m.l - m.r, ph = H - m.t - m.b;
+  const step = pw / (bins.length + 0.6), bw = step - 2;
+  const yMax = 3500, y = v => m.t + ph - (v / yMax) * ph;
+  const xAt = i => m.l + i * step + (i === 26 ? step * 0.6 : 0);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Histogram of weeks to decision; a spike in week 8 then a long tail">`;
+  for (const v of [0, 1000, 2000, 3000]) {
+    s += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid)" stroke-width="1"/>`;
+    s += `<text x="${m.l - 8}" y="${y(v) + 4}" text-anchor="end">${v.toLocaleString("en-GB")}</text>`;
+  }
+  bins.forEach((v, i) => {
+    const x = xAt(i), top = y(v), base = y(0), r = Math.min(4, (base - top) / 2);
+    const col = i < 8 ? "var(--ontime)" : "var(--late)";
+    const d = `M${x},${base} V${top + r} Q${x},${top} ${x + r},${top} H${x + bw - r} Q${x + bw},${top} ${x + bw},${top + r} V${base} Z`;
+    const range = i < 26 ? `days ${i * 7 + 1}–${(i + 1) * 7}` : "over 182 days";
+    s += `<path d="${d}" fill="${col}" data-tip="<b>Week ${labels[i]}</b> (${range})<br>${v.toLocaleString("en-GB")} decisions · ${(100 * v / decidedN).toFixed(1)}%"/>`;
+    s += `<rect x="${x - 1}" y="${m.t}" width="${step}" height="${ph}" fill="transparent" data-tip="<b>Week ${labels[i]}</b> (${range})<br>${v.toLocaleString("en-GB")} decisions · ${(100 * v / decidedN).toFixed(1)}%"/>`;
+    if ([0, 3, 7, 12, 25, 26].includes(i)) s += `<text x="${x + bw / 2}" y="${H - m.b + 16}" text-anchor="middle">${labels[i]}</text>`;
+  });
+  const dx = xAt(8) - 1;
+  s += `<line x1="${dx}" x2="${dx}" y1="${m.t - 10}" y2="${y(0)}" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+  s += `<text x="${dx + 6}" y="${m.t - 16}" class="lbl-strong">8-week statutory deadline</text>`;
+  s += `<text x="${xAt(7) - 6}" y="${y(bins[7]) + 4}" text-anchor="end" class="lbl-strong">${D.pct_decided_in_final_week}% in the final week</text>`;
+  s += `<text x="${xAt(26) + bw}" y="${y(bins[26]) - 8}" text-anchor="end" class="lbl-strong">${D.pct_over_26wk}% over 6 months</text>`;
+  s += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(0)}" y2="${y(0)}" stroke="var(--ink-3)" stroke-width="1"/>`;
+  s += `<text x="${m.l + pw / 2}" y="${H - 6}" text-anchor="middle">Weeks from start to decision</text></svg>`;
+  document.getElementById("hist").innerHTML = s;
+})();
+
+// helper for HTML bar rows
+function rows(el, items, max, mark) {
+  el.innerHTML = items.map(it => `
+    <div class="row" data-tip="${it.tip}">
+      <div class="name">${it.name}</div>
+      <div class="track">${mark != null ? `<span class="deadline" style="left:${100 * mark / max}%"></span>` : ""}<span class="bar${it.neutral ? " neutral" : ""}" style="width:${100 * it.v / max}%"></span></div>
+      <div class="val">${it.label}</div>
+    </div>`).join("");
+}
+
+// 2. years
+rows(document.getElementById("years"),
+  Object.entries(D.by_year).filter(([y]) => +y >= 2021).sort((a, b) => a[0] - b[0]).map(([y, v]) => ({
+    name: y, v: v.pct_over_8wk, label: pct(v.pct_over_8wk),
+    tip: `<b>${y}</b><br>${fmt(v.n)} applications<br>Median ${fmt(v.median_days)} days<br>${pct(v.pct_over_8wk)} decided after 8 weeks`
+  })), 100, 50);
+
+// 3. conditions per application
+(function () {
+  const order = ["1", "2-3", "4-6", "7+"];
+  const names = { "1": "One", "2-3": "Two or three", "4-6": "Four to six", "7+": "Seven or more" };
+  document.querySelector("#ncond tbody").innerHTML = order.map(k => {
+    const v = D.by_ncond[k];
+    return `<tr data-tip="<b>${names[k]}</b><br>${pct(v.pct_over_8wk)} late · median ${fmt(v.median_days)} days"><td>${names[k]}</td><td>${fmt(v.n)}</td><td>${fmt(v.median_days)}</td><td>${pct(v.pct_not_approved)}</td>
+      <td class="barcell"><div style="display:flex;gap:10px;align-items:center"><div class="mini" style="flex:1"><span style="width:${v.pct_over_8wk}%"></span><i class="dl" style="left:50%"></i></div><span class="mono">${pct(v.pct_over_8wk)}</span></div></td></tr>`;
+  }).join("");
+})();
+
+// 4. topics
+rows(document.getElementById("topics"),
+  Object.entries(D.by_topic).sort((a, b) => b[1].pct_over_8wk - a[1].pct_over_8wk).map(([k, v]) => ({
+    name: k, v: v.pct_over_8wk, label: pct(v.pct_not_approved),
+    tip: `<b>${k}</b><br>${fmt(v.n)} applications<br>${pct(v.pct_over_8wk)} decided after 8 weeks<br>Median ${fmt(v.median_days)} days<br>${pct(v.pct_not_approved)} refused or part-refused`
+  })), 100, 50);
+
+// 5. schemes
+(function () {
+  const order = ["Minor (1-9 homes)", "Major (10-149)", "Strategic (150+)", "Unknown", "All"];
+  document.querySelector("#schemes tbody").innerHTML = order.filter(k => S[k]).map(k => {
+    const v = S[k];
+    return `<tr${k === "All" ? ' style="font-weight:600"' : ""}><td>${k === "All" ? "All matched" : k}</td><td>${fmt(v.n_schemes)}</td><td>${v.homes ? fmt(v.homes) : "–"}</td><td>${v.mean_discharge_apps.toFixed(1)}</td><td>${pct(v.pct_with_refusal)}</td><td>${fmt(v.median_days_to_first_submission)}</td><td>${fmt(v.median_days_grant_to_last_decision)}</td></tr>`;
+  }).join("");
+})();
+
+// 6. boroughs
+document.querySelector("#boroughs tbody").innerHTML = Object.entries(D.by_borough)
+  .sort((a, b) => b[1].pct_over_8wk - a[1].pct_over_8wk)
+  .map(([k, v]) => `<tr data-tip="<b>${k}</b><br>${fmt(v.n)} applications<br>Median ${fmt(v.median_days)} days · 75th percentile ${fmt(v.p75_days)}<br>${pct(v.pct_not_approved)} refused or part-refused"><td>${k}</td><td>${fmt(v.n)}</td><td>${fmt(v.median_days)}</td><td>${pct(v.pct_not_approved)}</td>
+    <td class="barcell"><div style="display:flex;gap:10px;align-items:center"><div class="mini" style="flex:1"><span style="width:${v.pct_over_8wk}%"></span><i class="dl" style="left:50%"></i></div><span class="mono">${pct(v.pct_over_8wk)}</span></div></td></tr>`).join("");
+</script>
+</body>
+</html>
