@@ -102,6 +102,10 @@ header.notice { padding-block: 40px 0; display: grid; gap: 20px; }
 .row .bar.neutral { background: var(--bar-neutral); }
 .row .val { text-align: right; font-family: var(--f-mono); font-size: 0.85rem; font-variant-numeric: tabular-nums; }
 .row .deadline { position: absolute; top: -3px; bottom: -3px; border-left: 1px dashed var(--ink-3); }
+.row.pair .track { height: 26px; }
+.row.pair .bar.jev { top: 2px; bottom: auto; height: 13px; }
+.row.pair .bar.kw { top: 18px; bottom: auto; height: 6px; background: var(--bar-neutral); }
+.row.pair .val small { display: block; color: var(--ink-3); font-size: 0.78rem; }
 .row-head { font-size: 0.78rem; color: var(--ink-3); font-family: var(--f-mono); text-transform: uppercase; letter-spacing: 0.05em; }
 @media (max-width: 560px) { .row { grid-template-columns: minmax(0, 1fr) 4rem; } .row .track { grid-column: 1 / -1; grid-row: 2; } }
 
@@ -202,16 +206,16 @@ tr:hover td { background: color-mix(in srgb, var(--paper) 70%, transparent); }
 <section class="stack">
   <div class="prose stack">
     <p class="eyebrow">4 &middot; What gets stuck</p>
-    <h2>Drainage and construction logistics are both slow and often refused</h2>
-    <p>Drainage plans and construction logistics plans are usually needed before work can start. Both run late more than 60% of the time, and about one in five is refused. Fire safety details are refused at a similar rate.</p>
+    <h2>Drainage is both slow and often refused</h2>
+    <p>Read by Jev, which looks only at the conditions being signed off, drainage plans are decided late <span data-k="jev_drain_late">63%</span> of the time and refused <span data-k="jev_drain_ref">22%</span> of the time. Construction logistics plans run just as late (<span data-k="jev_clp_late">63%</span>) but are refused less often (<span data-k="jev_clp_ref">16%</span>) than keyword matching suggested. Both are usually needed before work can start. Fire safety details (<span data-k="jev_fire_ref">23%</span>) and cycle and refuse stores (<span data-k="jev_waste_ref">21%</span>) are refused most often.</p>
   </div>
   <figure class="panel" style="margin:0">
     <div class="panel-head">
       <h3>Condition topics: share decided after 8 weeks</h3>
-      <div class="legend"><span>Sorted by share late &middot; value at right is share refused or part-refused</span></div>
+      <div class="legend"><span><i style="background:var(--late)"></i>Jev: conditions being signed off</span><span><i style="background:var(--bar-neutral)"></i>Keyword tagger: whole description</span></div>
     </div>
     <div class="rows" id="topics"></div>
-    <figcaption class="source">Topics identified by keyword in the description; an application can mention several. Topics with at least 200 applications shown.</figcaption>
+    <figcaption class="source">Sorted by Jev's share late. Values at right are the share refused or part-refused, Jev first. The keyword tagger reads the whole description, which usually repeats the original permission, so it over-counts some topics: <span data-k="kw_waste_n">12,594</span> applications tagged for waste, cycle and parking, against <span data-k="jev_waste_n">2,922</span> by Jev. An application can cover several topics. Topics with at least 200 applications by either method shown.</figcaption>
   </figure>
 </section>
 
@@ -267,6 +271,7 @@ tr:hover td { background: color-mix(in srgb, var(--paper) 70%, transparent); }
     <li><b>Extensions of time</b> have no field of their own in the extract. 76% of decided applications carry a council target decision date, and measuring those against their own target gives 52.5% late, against 53.0% at a fixed 8 weeks. Only 5.3% were late at 8 weeks but on time against a later target, most of them in Hillingdon. Agreed extensions therefore explain a few points of the late share at most. Target dates are not used consistently: Camden, Merton and Enfield often set targets shorter than 56 days, and nine boroughs, including Brent and Wandsworth, record none.</li>
     <li><b>Coverage is uneven.</b> Some boroughs' discharge applications are mostly missing from the extract. Borough comparisons use only the 15 boroughs with at least 300 applications.</li>
     <li><b>Topics, condition counts and scheme size</b> come from keyword and pattern matching on free-text descriptions. Scheme size is unknown for about half of applications.</li>
+    <li><b>Jev topics</b> (section 4) come from Jev, TypeSafe's decision model on OpenRouter, asked a yes/no question per topic about only the conditions being signed off; a topic counts at a probability of 0.5 or more. All 17,079 descriptions were labelled.</li>
     <li><b>Scheme matching:</b> 5,664 discharge applications (33%) were matched to their parent permission by reference number. Many parents were granted before 2021 and are outside the extract.</li>
     <li><b>Deemed discharge</b> is counted from decision labels containing &ldquo;deemed&rdquo; together with &ldquo;discharge&rdquo; or &ldquo;AOD&rdquo;. Only Croydon (13), Southwark (2) and Islington (1) record any. Other boroughs may log a deemed discharge as an ordinary approval, so 16 is a floor, not a London total.</li>
     <li><b>Reproduce:</b> <code>python -m conditions_queue.analysis</code> writes <code>outputs/summary.json</code>, <code>outputs/discharge_apps.csv</code> and <code>outputs/schemes.csv</code>. <code>conditions_queue.checks.check_deadline</code> and <code>check_extensions</code> re-derive the deadline, deemed discharge and extension figures independently.</li>
@@ -374,12 +379,27 @@ rows(document.getElementById("years"),
   }).join("");
 })();
 
-// 4. topics
-rows(document.getElementById("topics"),
-  Object.entries(D.by_topic).sort((a, b) => b[1].pct_over_8wk - a[1].pct_over_8wk).map(([k, v]) => ({
-    name: k, v: v.pct_over_8wk, label: pct(v.pct_not_approved),
-    tip: `<b>${k}</b><br>${fmt(v.n)} applications<br>${pct(v.pct_over_8wk)} decided after 8 weeks<br>Median ${fmt(v.median_days)} days<br>${pct(v.pct_not_approved)} refused or part-refused`
-  })), 100, 50);
+// 4. topics: Jev labels (conditions being signed off) beside keyword labels (whole description)
+(function () {
+  const jev = D.by_topic_jev || {}, kw = D.by_topic || {};
+  const names = [...new Set([...Object.keys(jev), ...Object.keys(kw)])]
+    .sort((a, b) => (jev[b] ? jev[b].pct_over_8wk : -1) - (jev[a] ? jev[a].pct_over_8wk : -1));
+  const line = (label, v) => v ? `${label}: ${fmt(v.n)} applications · ${pct(v.pct_over_8wk)} late · ${pct(v.pct_not_approved)} refused` : `${label}: under 200 applications`;
+  const bar = (cls, v) => v ? `<span class="bar ${cls}" style="width:${v.pct_over_8wk}%"></span>` : "";
+  document.getElementById("topics").innerHTML =
+    `<div class="row row-head"><div>Topic</div><div>Share decided after 8 weeks</div><div class="val">Refused</div></div>` +
+    names.map(k => `
+    <div class="row pair" data-tip="<b>${k}</b><br>${line("Jev", jev[k])}<br>${line("Keyword", kw[k])}">
+      <div class="name">${k}</div>
+      <div class="track"><span class="deadline" style="left:50%"></span>${bar("jev", jev[k])}${bar("kw", kw[k])}</div>
+      <div class="val">${jev[k] ? pct(jev[k].pct_not_approved) : "–"}<small>${kw[k] ? pct(kw[k].pct_not_approved) : "–"}</small></div>
+    </div>`).join("");
+  const J = (t, f) => jev[t] ? jev[t][f] : null, K = (t, f) => kw[t] ? kw[t][f] : null;
+  set("jev_drain_late", pct(J("Drainage & flood", "pct_over_8wk"))); set("jev_drain_ref", pct(J("Drainage & flood", "pct_not_approved")));
+  set("jev_clp_late", pct(J("Construction logistics / management", "pct_over_8wk"))); set("jev_clp_ref", pct(J("Construction logistics / management", "pct_not_approved")));
+  set("jev_fire_ref", pct(J("Fire safety", "pct_not_approved"))); set("jev_waste_ref", pct(J("Waste, cycle & parking", "pct_not_approved")));
+  set("kw_waste_n", fmt(K("Waste, cycle & parking", "n"))); set("jev_waste_n", fmt(J("Waste, cycle & parking", "n")));
+})();
 
 // 5. schemes
 (function () {

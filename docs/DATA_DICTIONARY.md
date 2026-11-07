@@ -211,6 +211,7 @@ Article 4 and tree preservation zones are recorded too unevenly between boroughs
 | File | Written by | Contents |
 |---|---|---|
 | `outputs/summary.json` | `analysis.py` | All figures on the London's Conditions Queue page |
+| `site/insight.html` | `build_insight_page.py` | The findings page: `summary.json` plus `by_topic_jev`, the late and refusal rates per topic using Jev's labels (same population and definitions as `by_topic`) |
 | `outputs/ui_late_model.json` | `notebooks/02_late_model.ipynb`, last section | Late-model scores, risk groups, importance, bundling, Jev comparison |
 | `outputs/ui_days_model.json` | `notebooks/03_days_model.ipynb`, last section | Days scores, accuracy, predicted vs actual, ranges, Cox effects, importance, description test, external tests |
 | `outputs/ui_dashboard.json` | `build_dashboard_data.py` | The two exports above reshaped into one table per dashboard chart (section 8); also copied to `site/data/` |
